@@ -28,9 +28,8 @@ env:
 
 jobs:
   build:
-    # macOS 13 (Xcode 15.2) is stable, supports iOS 17+, and is free on public repos.
-    # xcode-27 (Xcode 27 beta) has Foundation SDK issues (NSURLHandle.h removed).
-    runs-on: macos-13
+    # macOS latest stable (Xcode 15.x) is free on public repos and supports iOS 17+.
+    runs-on: macos-latest
     timeout-minutes: 120
 
     steps:
