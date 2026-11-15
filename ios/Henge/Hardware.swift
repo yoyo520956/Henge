@@ -34,9 +34,16 @@ enum Device {
         return (Int((Double(s.width) / 264 * 25.4).rounded()), Int((Double(s.height) / 264 * 25.4).rounded()))
     }
 
+    /// Physical RAM, in MB, as iOS reports it.
+    static var physicalMB: Int { Int(ProcessInfo.processInfo.physicalMemory >> 20) }
+
+    /// 4 GB devices (and anything under 5 GB, as usable) are the tight class: the guest,
+    /// the JIT region and the app itself must share real RAM with iOS.
+    static var lowMemory: Bool { physicalMB < 5_000 }
+
     /// How much memory to suggest for a new Mac: what leaves this device room for iOS.
     static var suggestedRAMGB: Int {
-        let mb = ProcessInfo.processInfo.physicalMemory >> 20
+        let mb = physicalMB
         // m4 fork: an 8 GB iPad (7.4 GB usable) thrashes and kills the Mac at 6 GB: 16 GB devices only.
         // A 6 GB device (5.7 GB usable) could not build a 4 GB Mac, and installed a 3 GB one (#70); 4 GB devices, 2.
         return mb >= 14_000 ? 8 : mb >= 10_000 ? 6 : mb >= 7_000 ? 4 : mb >= 5_000 ? 3 : 2
@@ -47,8 +54,8 @@ enum Device {
 
     /// What a choice risks on this device, if anything. An install always gets at least 2 GB (Installer.install).
     static func memoryNote(_ gb: Int) -> String? {
+        if gb > suggestedRAMGB { return L.f("More than %lld GB is a lot for this %@: iOS may close Henge when macOS gets busy.", suggestedRAMGB, name) }
         if gb < 4 { return L.s("macOS has little room under 4 GB, so it can be very slow.") }
-        if gb > suggestedRAMGB { return L.f("More than %@ GB is a lot for this %@: iOS may close Henge when macOS gets busy.", String(describing: suggestedRAMGB), String(describing: name)) }
         return nil
     }
 
@@ -61,7 +68,7 @@ enum Device {
         return major < 13
     }()
 
-    static let chipTooOldText = "macOS won't run on this \(name). Henge needs an A14 or M1 chip or newer."
+    static var chipTooOldText: String { L.f("macOS won't run on this %@. Henge needs an A14 or M1 chip or newer.", name) }
 }
 
 /// A keyboard attached to the device. iOS reports each key going down and coming up by its HID usage,
