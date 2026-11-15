@@ -19,6 +19,9 @@ struct HengeApp: App {
         HengeLog.log("app", "memory profile: \(LowMemoryProfile.active.key) (physical \(Device.physicalMB) MB, suggested Mac \(Device.suggestedRAMGB) GB, code cache \(JITBootstrap.jitBytes >> 20) MB, restore cap \(LowMemoryProfile.restoreCapMB) MB)")
         // Without the guard, a brk no debugger answers kills the app instead of failing.
         JITBootstrap.installTrapGuard()
+        // The five-minute heartbeat: memory and log upkeep for the 4 GB
+        // devices, where jetsam closes Henge if it grows past what iOS allows.
+        Heartbeat.start()
         try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
         Machines.shared.collectImports()
         // The display question: does this iOS have Apple's paravirtualized graphics at all?
@@ -32,6 +35,17 @@ struct HengeApp: App {
         WindowGroup {
             RootView()
                 .onOpenURL { url in HengeLog.log("app", "opened with \(url.absoluteString)") } // henge:// back from LocalDevVPN
+                .onChange(of: scenePhase) { phase in
+                    // The heartbeat's timer is exact while Henge is on screen.
+                    // When it comes back, re-arm it so the next round is five
+                    // minutes away rather than five minutes after whatever the
+                    // background did to the schedule.
+                    switch phase {
+                    case .active: Heartbeat.appDidBecomeActive()
+                    case .background: Heartbeat.appDidEnterBackground()
+                    default: break
+                    }
+                }
         }
     }
 }
