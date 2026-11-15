@@ -28,11 +28,12 @@ env:
 
 jobs:
   build:
-    # macos-14 has fast runner availability on free public repos.
-    # It ships Xcode 15.x–16.x; the selection step below picks the newest
-    # usable one. Xcode 26+/27 (this image's default) is avoided because its
-    # SDK removed Foundation/NSURLHandle.h, which Henge's restore stack needs.
-    runs-on: macos-14
+    # macos-15 ships Xcode 16.0–16.4 (default 16.4). Xcode 16.x still has
+    # Foundation/NSURLHandle.h; Xcode 26+/27 (default on macos-26 / the old
+    # macos-14 image) removed it from the SDK, which breaks the restore stack.
+    # macos-13/14 labels are EOL and cancel instantly ("configuration not
+    # supported"), and macos-latest now maps to macos-26.
+    runs-on: macos-15
     timeout-minutes: 180
 
     steps:
@@ -69,10 +70,10 @@ jobs:
             rustup target add aarch64-apple-ios
           }
 
-      - name: Select Xcode 15/16 (avoid Xcode 26+ whose SDK removed NSURLHandle.h)
+      - name: Select Xcode 16.x (default here; avoids Xcode 26+ SDK's missing NSURLHandle.h)
         run: |
           set -euo pipefail
-          for ver in 15.4 15.3 15.2 15.1 15.0 16.4 16.3 16.2 16.1 16.0; do
+          for ver in 16.4 16.3 16.2 16.1 16.0; do
             if [ -d "/Applications/Xcode_${ver}.app" ]; then
               sudo xcode-select -s "/Applications/Xcode_${ver}.app"
               echo "Selected Xcode ${ver}"
@@ -80,7 +81,6 @@ jobs:
             fi
           done
           xcodebuild -version
-          xcodebuild -showsdks | grep -i iphoneos || true
 
       - name: Fetch Husk's third-party sources
         working-directory: Husk
