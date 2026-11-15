@@ -1,0 +1,18 @@
+--- a/project.yml
++++ b/project.yml
+@@ -33,6 +33,7 @@
+       base:
+         PRODUCT_BUNDLE_IDENTIFIER: com.stik.StikJIT
+         PRODUCT_NAME: StikJIT
++        PRODUCT_MODULE_NAME: StikJITKit
+         CURRENT_PROJECT_VERSION: "$(inherited)"
+         DEFINES_MODULE: YES
+         BUILD_LIBRARY_FOR_DISTRIBUTION: YES
+@@ -67,6 +68,7 @@
+       base:
+         PRODUCT_BUNDLE_IDENTIFIER: com.stik.StikJIT
+         PRODUCT_NAME: StikJIT
++        PRODUCT_MODULE_NAME: StikJITKit
+         CURRENT_PROJECT_VERSION: "$(inherited)"
+         DEFINES_MODULE: YES
+         BUILD_LIBRARY_FOR_DISTRIBUTION: YES
