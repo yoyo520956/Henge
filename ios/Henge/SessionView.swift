@@ -631,6 +631,9 @@ struct SessionView: View {
         }
         bootRAM = ram
         HengeLog.logFootprint("after-boot")
+        // The heartbeat reports on the running Mac's memory; it needs to know
+        // how much the Mac was given.
+        Heartbeat.noteGuestStarted(ramMB: Int(ram))
         started = Date()
         var used = mac
         used.lastUsed = started
@@ -704,6 +707,8 @@ struct SessionView: View {
             MacPreview.saveNow(for: mac)
             henge_vm_stop()
         }
+        // The Mac is gone: the heartbeat has no guest to report on any more.
+        Heartbeat.noteGuestStopped()
         InstantResume.discard(for: mac) /* turned off: nothing to pick up */
         close()
     }
