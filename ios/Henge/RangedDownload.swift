@@ -32,7 +32,7 @@ final class RangedDownload: NSObject, URLSessionDataDelegate {
     func run() async throws {
         if !FileManager.default.fileExists(atPath: part.path) {
             guard FileManager.default.createFile(atPath: part.path, contents: nil) else {
-                throw NSError(domain: "Henge", code: 4, userInfo: [NSLocalizedDescriptionKey: "Henge couldn't create the download file."])
+                throw NSError(domain: "Henge", code: 4, userInfo: [NSLocalizedDescriptionKey: L.s("Henge couldn't create the download file.")])
             }
         }
         have = Self.size(of: part)
@@ -85,7 +85,7 @@ final class RangedDownload: NSObject, URLSessionDataDelegate {
                 let start = Int64(range.split(separator: " ").last?.split(separator: "-").first ?? "") ?? -1
                 total = Int64(range.split(separator: "/").last ?? "") ?? 0
                 guard start == have else {
-                    throw NSError(domain: "Henge", code: 5, userInfo: [NSLocalizedDescriptionKey: "Apple's server sent the wrong part of the file."])
+                    throw NSError(domain: "Henge", code: 5, userInfo: [NSLocalizedDescriptionKey: L.s("Apple's server sent the wrong part of the file.")])
                 }
             case 200: // the whole file: start again
                 total = response.expectedContentLength
@@ -104,7 +104,7 @@ final class RangedDownload: NSObject, URLSessionDataDelegate {
                 finish(nil)
                 return
             default:
-                throw NSError(domain: "Henge", code: 3, userInfo: [NSLocalizedDescriptionKey: "Apple's server answered \(status)."])
+                throw NSError(domain: "Henge", code: 3, userInfo: [NSLocalizedDescriptionKey: L.f("Apple's server answered %@.", String(status))])
             }
             let h = try FileHandle(forWritingTo: part)
             try h.truncate(atOffset: UInt64(have))
@@ -135,7 +135,7 @@ final class RangedDownload: NSObject, URLSessionDataDelegate {
         if let failure { finish(failure); return }
         if let error { finish(error); return }
         if total > 0 && have != total {
-            finish(NSError(domain: "Henge", code: 7, userInfo: [NSLocalizedDescriptionKey: "The download ended early (\(have) of \(total) bytes)."]))
+            finish(NSError(domain: "Henge", code: 7, userInfo: [NSLocalizedDescriptionKey: L.f("The download ended early (%lld of %lld bytes).", have, total)]))
             return
         }
         finish(nil)
