@@ -16,6 +16,7 @@ struct HengeApp: App {
         HengeLog.logFootprint("app-launch")
         JITBootstrap.noteLaunchState()
         HengeLog.log("app", "increased memory limit: \(Entitlements.increasedMemory ? "yes" : "no"); extended addressing: \(Entitlements.extendedAddressing ? "yes" : "no"); limit \(Entitlements.memoryLimitAtLaunch >> 20) MB")
+        HengeLog.log("app", "memory profile: \(LowMemoryProfile.active.key) (physical \(Device.physicalMB) MB, suggested Mac \(Device.suggestedRAMGB) GB, code cache \(JITBootstrap.jitBytes >> 20) MB, restore cap \(LowMemoryProfile.restoreCapMB) MB)")
         // Without the guard, a brk no debugger answers kills the app instead of failing.
         JITBootstrap.installTrapGuard()
         try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
