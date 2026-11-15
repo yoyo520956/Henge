@@ -40,8 +40,14 @@ enum GuestMemory {
             .volumeAvailableCapacityForImportantUsage ?? 0
         let room = free > 0 ? UInt64(max(free - (2 << 30), 0)) >> 20 : UInt64.max
         let reach = henge_largest_mapping_mb()
-        let ram = min(UInt64(mac.ramMB), room, reach > 512 ? reach - 512 : 0) / 512 * 512
-        HengeLog.log("session", "guest RAM \(ram) MB (asked \(mac.ramMB), disk room \(room), largest mapping \(reach))")
+        let profileCap = LowMemoryProfile.active == .low ? 2048 : Int.max
+        let ram = min(UInt64(mac.ramMB), room, UInt64(profileCap), reach > 512 ? reach - 512 : 0) / 512 * 512
+        if ram < UInt64(mac.ramMB) {
+            HengeLog.log("session", "guest RAM capped to \(ram) MB (asked \(mac.ramMB), profile cap \(profileCap), disk room \(room), largest mapping \(reach))")
+        } else {
+            HengeLog.log("session", "guest RAM \(ram) MB (asked \(mac.ramMB), profile cap \(profileCap), disk room \(room), largest mapping \(reach))")
+        }
+        HengeLog.logFootprint("guest-ram")
         return ram
     }
 }
@@ -166,7 +172,7 @@ final class Machines: ObservableObject {
             let data = try Data(contentsOf: folder.appendingPathComponent("machine.json"))
             let info = try JSONDecoder().decode(MachineFile.self, from: data)
             let missing = Self.required.filter { !FileManager.default.fileExists(atPath: folder.appendingPathComponent($0).path) }
-            guard missing.isEmpty, Self.hasDisk(folder) else { throw message("The folder is missing \((missing + (Self.hasDisk(folder) ? [] : ["disk.img"])).joined(separator: ", ")).") }
+            guard missing.isEmpty, Self.hasDisk(folder) else { throw message(L.f("The folder is missing %@.", (missing + (Self.hasDisk(folder) ? [] : ["disk.img"])).joined(separator: ", "))) }
             var mac = VirtualMac(name: info.name ?? folder.lastPathComponent, ecid: info.ecid, seed: info.seed ?? 0,
                                  ramMB: info.ramMB ?? 2048, diskBytes: 0)
             importing = mac.name
@@ -191,7 +197,7 @@ final class Machines: ObservableObject {
                         Task { @MainActor in Machines.shared.unpacked = fraction }
                     }, nil) == 0
                 }.value
-                guard ok else { try? fm.removeItem(at: dest); throw message("The packed disk could not be unpacked (not enough space?).") }
+                guard ok else { try? fm.removeItem(at: dest); throw message(L.s("The packed disk could not be unpacked (not enough space?).")) }
                 if move { try? fm.removeItem(at: packed) }
             }
             if move { try? fm.removeItem(at: folder) }
@@ -241,7 +247,7 @@ final class Machines: ObservableObject {
         let free = (try? Self.root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?.volumeAvailableCapacityForImportantUsage ?? 0
         let needed = Int64(used) + (256 << 20)
         if free > 0 && free < needed {
-            throw message("Exporting \(mac.name) needs about \(ByteText.string(UInt64(needed))) free; this \(Device.name) has \(ByteText.string(UInt64(free))). Deleting a downloaded macOS installer (Install macOS, swipe it) frees about 16 GB.")
+            throw message(L.f("Exporting %@ needs about %@ free; this %@ has %@. Deleting a downloaded macOS installer (Install macOS, swipe it) frees about 16 GB.", mac.name, ByteText.string(UInt64(needed)), Device.name, ByteText.string(UInt64(free))))
         }
         try fm.createDirectory(at: partial, withIntermediateDirectories: true)
         do {
@@ -256,7 +262,7 @@ final class Machines: ObservableObject {
                     Task { @MainActor in Machines.shared.exported = fraction }
                 }, nil) == 0
             }.value
-            guard ok else { throw message("The disk could not be written (not enough space?).") }
+            guard ok else { throw message(L.s("The disk could not be written (not enough space?).")) }
             try fm.moveItem(at: partial, to: final)
         } catch {
             try? fm.removeItem(at: partial)
