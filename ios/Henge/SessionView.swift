@@ -66,8 +66,8 @@ struct SessionView: View {
                         if display.isExternal && state != 2 {
                             VStack(spacing: 8) {
                                 Image(systemName: "display").font(.largeTitle)
-                                Text("Mac on external display").font(.headline)
-                                Text("Use the trackpad, keyboard or a connected mouse.")
+                                Text(L.s("Mac on external display")).font(.headline)
+                                Text(L.s("Use the trackpad, keyboard or a connected mouse."))
                                     .font(.subheadline)
                             }
                             .foregroundStyle(.white)
@@ -101,7 +101,7 @@ struct SessionView: View {
                         floatingControls(layout)
                     }
                     if pointerRefused && !showRevealHint {
-                        Label("Make Henge full screen to use the trackpad or mouse as the Mac's", systemImage: "cursorarrow.rays")
+                        Label(L.s("Make Henge full screen to use the trackpad or mouse as the Mac's"), systemImage: "cursorarrow.rays")
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 18).padding(.vertical, 12)
@@ -111,7 +111,7 @@ struct SessionView: View {
                             .allowsHitTesting(false)
                     }
                     if showRevealHint {
-                        Label("Tap with four fingers to show the controls", systemImage: "hand.tap")
+                        Label(L.s("Tap with four fingers to show the controls"), systemImage: "hand.tap")
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 18).padding(.vertical, 12)
@@ -121,7 +121,7 @@ struct SessionView: View {
                             .allowsHitTesting(false)
                     }
                     if showWallpaperTip && !showRevealHint && !pointerRefused {
-                        Label("For more speed, give this Mac a still wallpaper and set its screen saver to Never in System Settings.", systemImage: "speedometer")
+                        Label(L.s("For more speed, give this Mac a still wallpaper and set its screen saver to Never in System Settings."), systemImage: "speedometer")
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.white)
                             .multilineTextAlignment(.leading)
@@ -165,10 +165,10 @@ struct SessionView: View {
         .statusBarHidden(zoomed || Device.isPad)
         .persistentSystemOverlays(.hidden)
         .sheet(isPresented: $showDetails) { details }
-        .confirmationDialog("Shut down \(mac.name)?", isPresented: $confirmStop, titleVisibility: .visible) {
-            Button("Shut Down", role: .destructive) { finish() }
+        .confirmationDialog(L.f("Shut down %@?", String(describing: mac.name), isPresented: $confirmStop, titleVisibility: .visible)) {
+            Button(L.s("Shut Down"), role: .destructive) { finish() }
         } message: {
-            Text("This turns the Mac off at once. Anything not saved on it is lost.")
+            Text(L.s("This turns the Mac off at once. Anything not saved on it is lost."))
         }
         .onChange(of: zoomed) { on in
             zoomFollowing?.cancel()
@@ -288,17 +288,17 @@ struct SessionView: View {
     @ViewBuilder private func uprightControls(_ layout: Layout) -> some View {
         if !typing && !controlsHidden {
             HStack {
-                tool("eye.slash", "Hide controls") { hideControls() }
+                tool("eye.slash", L.s("Hide controls")) { hideControls() }
                 Spacer()
-                tool("keyboard", "Keyboard") { typing = true }
+                tool("keyboard", L.s("Keyboard")) { typing = true }
                 Spacer()
                 pasteTool
                 Spacer()
-                tool("plus.magnifyingglass", "Zoom in") { zoomed = true }
+                tool("plus.magnifyingglass", L.s("Zoom in")) { zoomed = true }
                 Spacer()
-                tool("info.circle", "Details") { showDetails = true }
+                tool("info.circle", L.s("Details")) { showDetails = true }
                 Spacer()
-                tool("power", "Shut down", tint: Desk.bad) { stopTapped() }
+                tool("power", L.s("Shut down"), tint: Desk.bad) { stopTapped() }
             }
             .padding(.horizontal, 22)
             .frame(width: layout.pad.width, height: 54)
@@ -316,22 +316,22 @@ struct SessionView: View {
             ZStack {
                 Trackpad()
                 if compact {
-                    Text("Trackpad").font(.system(size: 14)).foregroundStyle(Desk.faint).allowsHitTesting(false)
+                    Text(L.s("Trackpad")).font(.system(size: 14)).foregroundStyle(Desk.faint).allowsHitTesting(false)
                 } else {
                     VStack(spacing: 6) {
-                        hint("Drag", "to move")
-                        hint("Tap", "to click")
-                        hint("Hold, then drag", "to grab")
-                        hint("Two fingers", "to scroll")
+                        hint(L.s("Drag"), L.s("to move"))
+                        hint(L.s("Tap"), L.s("to click"))
+                        hint(L.s("Hold, then drag"), L.s("to grab"))
+                        hint(L.s("Two fingers"), L.s("to scroll"))
                     }
                     .allowsHitTesting(false)
                 }
             }
             Rectangle().fill(Desk.hairline).frame(height: 0.5)
             HStack(spacing: 0) {
-                MouseButton(title: "Click", button: 0)
+                MouseButton(title: L.s("Click"), button: 0)
                 Rectangle().fill(Desk.hairline).frame(width: 0.5)
-                MouseButton(title: "Right-click", button: 1)
+                MouseButton(title: L.s("Right-click"), button: 1)
             }
             .frame(height: compact ? 50 : 70)
         }
@@ -343,7 +343,7 @@ struct SessionView: View {
     }
 
     private func hint(_ strong: String, _ rest: String) -> some View {
-        (Text(strong).foregroundColor(Desk.dim).fontWeight(.semibold) + Text(" \(rest)").foregroundColor(Desk.faint))
+        (Text(strong).foregroundColor(Desk.dim).fontWeight(.semibold) + Text(L.f(" %@", String(describing: rest))).foregroundColor(Desk.faint))
             .font(.system(size: 15))
     }
 
@@ -384,13 +384,13 @@ struct SessionView: View {
         let landscape = layout.touch.width > layout.touch.height
         let top = layout.insets.top + (landscape ? 8 : 6)
         let pill = HStack(spacing: 4) {
-            tool("eye.slash", "Hide controls", tint: .white) { hideControls() }
-            tool("keyboard", "Keyboard", tint: .white) { typing.toggle() }
+            tool("eye.slash", L.s("Hide controls"), tint: .white) { hideControls() }
+            tool("keyboard", L.s("Keyboard"), tint: .white) { typing.toggle() }
             pasteTool
-            tool(zoomed ? "minus.magnifyingglass" : "plus.magnifyingglass", zoomed ? "Zoom out" : "Zoom in", tint: zoomed ? Desk.accentLight : .white) { zoomed.toggle() }
-            tool("info.circle", "Details", tint: .white) { showDetails = true }
+            tool(zoomed ? "minus.magnifyingglass" : "plus.magnifyingglass", zoomed ? L.s("Zoom out") : L.s("Zoom in"), tint: zoomed ? Desk.accentLight : .white) { zoomed.toggle() }
+            tool("info.circle", L.s("Details"), tint: .white) { showDetails = true }
             Rectangle().fill(Color.white.opacity(0.3)).frame(width: 1, height: 22).padding(.horizontal, 4)
-            tool("power", "Shut down", tint: Desk.bad) { stopTapped() }
+            tool("power", L.s("Shut down"), tint: Desk.bad) { stopTapped() }
         }
         .padding(.horizontal, 8)
         .frame(height: 50)
@@ -460,9 +460,9 @@ struct SessionView: View {
 
     private func errorCard(_ text: String, _ layout: Layout) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("This Mac could not start").font(.system(size: 17, weight: .semibold))
+            Text(L.s("This Mac could not start")).font(.system(size: 17, weight: .semibold))
             Text(text).font(.system(size: 14)).foregroundStyle(Desk.dim)
-            Button("Close") { close() }.font(.system(size: 15, weight: .semibold)).foregroundStyle(Desk.accentLight)
+            Button(L.s("Close")) { close() }.font(.system(size: 15, weight: .semibold)).foregroundStyle(Desk.accentLight)
         }
         .padding(18)
         .frame(width: min(layout.touch.width, 390) - 32, alignment: .leading)
@@ -474,8 +474,8 @@ struct SessionView: View {
         switch state {
         case 0: return error == nil ? "Starting…" : "Not started"
         case 1: return userCode ? "macOS is running" : "Booting"
-        case 3: return "Finishing shutdown…"
-        default: return "Stopped (\(String(cString: henge_vm_exit_reason())))"
+        case 3: return L.s("Finishing shutdown…")
+        default: return L.f("Stopped (%@)", String(describing: String(cString: henge_vm_exit_reason())))
         }
     }
 
@@ -483,36 +483,36 @@ struct SessionView: View {
         NavigationStack {
             List {
                 Section(phase) {
-                    LabeledContent("CPUs on", value: "\(cpusOn) of \(cpus)")
-                    LabeledContent("Temperature", value: Self.thermalLabel(thermalState))
-                    LabeledContent("Translated blocks", value: String(format: "%.1f M/s", blocksPerSecond / 1e6))
-                    LabeledContent("Network frames", value: "\(framesOut) out, \(framesIn) in")
-                    LabeledContent("Up", value: "\(Int(Date().timeIntervalSince(started))) s")
+                    LabeledContent(L.s("CPUs on"), value: "\(cpusOn) of \(cpus)")
+                    LabeledContent(L.s("Temperature"), value: Self.thermalLabel(thermalState))
+                    LabeledContent(L.s("Translated blocks"), value: String(format: "%.1f M/s", blocksPerSecond / 1e6))
+                    LabeledContent(L.s("Network frames"), value: "\(framesOut) out, \(framesIn) in")
+                    LabeledContent(L.s("Up"), value: "\(Int(Date().timeIntervalSince(started))) s")
                 }
-                Section("Display") {
-                    Toggle("Color matching", isOn: $matchScreenColors)
-                    LabeledContent("Brightness", value: "\(Int(screenBrightness * 100))%")
+                Section(L.s("Display")) {
+                    Toggle(L.s("Color matching"), isOn: $matchScreenColors)
+                    LabeledContent(L.s("Brightness"), value: "\(Int(screenBrightness * 100))%")
                     Slider(value: $screenBrightness, in: 0.4...1)
-                    Text("Brightness dims only the Mac's screen.")
+                    Text(L.s("Brightness dims only the Mac's screen."))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
-                Section("Pointer") {
-                    Picker("Size", selection: $cursorScale) {
-                        Text("1×").tag(1)
-                        Text("2×").tag(2)
-                        Text("3×").tag(3)
+                Section(L.s("Pointer")) {
+                    Picker(L.s("Size"), selection: $cursorScale) {
+                        Text(L.s("1×")).tag(1)
+                        Text(L.s("2×")).tag(2)
+                        Text(L.s("3×")).tag(3)
                     }
                     .pickerStyle(.segmented)
-                    Toggle("Sharp edges", isOn: $sharpCursor)
-                    LabeledContent("Scroll speed", value: String(format: "%.1f×", scrollSpeed))
+                    Toggle(L.s("Sharp edges"), isOn: $sharpCursor)
+                    LabeledContent(L.s("Scroll speed"), value: String(format: "%.1f×", scrollSpeed))
                     Slider(value: $scrollSpeed, in: 0.1...1.5)
-                    Text("The Mac supplies a small pointer image. Enlarging it can look blurry; 1× is the sharpest on an iPad. Scroll speed changes apply immediately.")
+                    Text(L.s("The Mac supplies a small pointer image. Enlarging it can look blurry; 1× is the sharpest on an iPad. Scroll speed changes apply immediately."))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
-                Section("Sharing") {
-                    LabeledContent("Clipboard and folder", value: helperRunning ? "On" : "Not set up")
+                Section(L.s("Sharing")) {
+                    LabeledContent(L.s("Clipboard and folder"), value: helperRunning ? "On" : "Not set up")
                     if !helperRunning {
-                        Button("Type the Set Up Command") {
+                        Button(L.s("Type the Set Up Command")) {
                             showDetails = false
                             Task {
                                 try? await Task.sleep(nanoseconds: 600_000_000)
@@ -525,25 +525,25 @@ struct SessionView: View {
                          : "Once for each Mac: open Terminal on the Mac, tap this, then press Return. When macOS asks about henge-agent and local networks, choose Allow. It types \(Sharing.setUpCommand) and needs the Mac's keyboard layout to be U.S.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
-                Section("Lighter macOS") {
-                    Button("Type the Lighter macOS Command") {
+                Section(L.s("Lighter macOS")) {
+                    Button(L.s("Type the Lighter macOS Command")) {
                         showDetails = false
                         Task {
                             try? await Task.sleep(nanoseconds: 600_000_000)
                             await Keys.typeSlowly(Sharing.lightenCommand)
                         }
                     }
-                    Button("Type the Undo Command") {
+                    Button(L.s("Type the Undo Command")) {
                         showDetails = false
                         Task {
                             try? await Task.sleep(nanoseconds: 600_000_000)
                             await Keys.typeSlowly(Sharing.unlightenCommand)
                         }
                     }
-                    Text("Less drawing for the emulated CPUs: window and Dock animations, desktop widgets, the screen saver and a moving wallpaper go. Open Terminal on the Mac, tap the button and press Return, then log out and back in. Also turn on Reduce Motion and Reduce Transparency in the Mac's System Settings, Accessibility. Undo puts it back, apart from the wallpaper. Needs the Mac's keyboard layout to be U.S.")
+                    Text(L.s("Less drawing for the emulated CPUs: window and Dock animations, desktop widgets, the screen saver and a moving wallpaper go. Open Terminal on the Mac, tap the button and press Return, then log out and back in. Also turn on Reduce Motion and Reduce Transparency in the Mac's System Settings, Accessibility. Undo puts it back, apart from the wallpaper. Needs the Mac's keyboard layout to be U.S."))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
-                Section("Log") {
+                Section(L.s("Log")) {
                     VStack(alignment: .leading, spacing: 1) {
                         ForEach(Array(log.suffix(30).enumerated()), id: \.offset) { _, line in
                             Text(line).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
@@ -551,7 +551,7 @@ struct SessionView: View {
                     }
                 }
             }
-            .navigationTitle("Details")
+            .navigationTitle(Text(L.s("Details")))
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -560,11 +560,11 @@ struct SessionView: View {
 
     private static func thermalLabel(_ state: ProcessInfo.ThermalState) -> String {
         switch state {
-        case .nominal: return "Normal"
-        case .fair: return "Warm"
-        case .serious: return "Hot — performance reduced"
-        case .critical: return "Critical"
-        @unknown default: return "Unknown"
+        case .nominal: return L.s("Normal")
+        case .fair: return L.s("Warm")
+        case .serious: return L.s("Hot — performance reduced")
+        case .critical: return L.s("Critical")
+        @unknown default: return L.s("Unknown")
         }
     }
 

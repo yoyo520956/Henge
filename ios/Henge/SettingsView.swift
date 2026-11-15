@@ -22,41 +22,41 @@ struct SettingsView: View {
     /// The second footer paragraph: how you click, given the selected input mode.
     private var inputDescription: String {
         if inputMode == .touchscreen {
-            return "Tap to click once. Tap then hold to begin dragging. Quickly tap with two fingers to right-click."
+            return L.s("Tap to click once. Tap then hold to begin dragging. Quickly tap with two fingers to right-click.")
         }
         switch volumeMode {
         case .delayHold:
-            return "Delay hold waits to see if you're holding or just clicking the volume button, which results in all clicks being ~0.5s long."
+            return L.s("Delay hold waits to see if you're holding or just clicking the volume button, which results in all clicks being ~0.5s long.")
         case .tapThenDrag:
-            return "Tap then drag waits to see if you're holding or just clicking the volume button, but it unconditionally sends a single click regardless of whether you tap or hold, which results in shorter clicks at the cost of sending a click before holding."
+            return L.s("Tap then drag waits to see if you're holding or just clicking the volume button, but it unconditionally sends a single click regardless of whether you tap or hold, which results in shorter clicks at the cost of sending a click before holding.")
         case .intercept:
-            return "Activates the camera in order to intercept volume keys properly. This causes the volume keys to behave in the same way a mouse's buttons do, but it causes higher temperatures, as the camera is always on."
+            return L.s("Activates the camera in order to intercept volume keys properly. This causes the volume keys to behave in the same way a mouse's buttons do, but it causes higher temperatures, as the camera is always on.")
         }
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("JIT") {
-                    LabeledContent("Status", value: JITBootstrap.ready ? "On" : "Off")
-                    Picker("Method", selection: $jit.method) {
+                Section(L.s("JIT")) {
+                    LabeledContent(L.s("Status"), value: JITBootstrap.ready ? "On" : "Off")
+                    Picker(L.s("Method"), selection: $jit.method) {
                         ForEach(JITMethod.allCases) { Text($0.title).tag($0) }
                     }
-                    Text(jit.method == .automatic ? jit.automaticDescription : "Henge uses \(jit.method.title).")
+                    Text(jit.method == .automatic ? jit.automaticDescription : L.f("Henge uses %@.", String(describing: jit.method.title)))
                         .font(.footnote).foregroundStyle(.secondary)
-                    Button("Set up JIT") { jit.showSetup = true }
-                    Toggle("Turn on JIT when Henge opens", isOn: $jitAtLaunch)
+                    Button(L.s("Set up JIT")) { jit.showSetup = true }
+                    Toggle(L.s("Turn on JIT when Henge opens"), isOn: $jitAtLaunch)
                     if jitAtLaunch {
-                        Text("Henge connects LocalDevVPN first when it is off, and comes back.")
+                        Text(L.s("Henge connects LocalDevVPN first when it is off, and comes back."))
                             .font(.footnote).foregroundStyle(.secondary)
                     }
-                    LabeledContent("Code region", value: "\(JITBootstrap.jitBytes >> 20) MB, claimed once per launch")
+                    LabeledContent(L.s("Code region"), value: "\(JITBootstrap.jitBytes >> 20) MB, claimed once per launch")
                 }
                 .listRowBackground(Desk.card)
-                Section("Memory") {
-                    LabeledContent("Extra memory", value: Entitlements.increasedMemory ? "On" : "Off")
-                    LabeledContent("Henge's limit", value: ByteText.string(UInt64(Entitlements.memoryLimitAtLaunch)))
-                    LabeledContent("Free for Henge", value: ByteText.string(UInt64(henge_available_memory())))
+                Section(L.s("Memory")) {
+                    LabeledContent(L.s("Extra memory"), value: Entitlements.increasedMemory ? "On" : "Off")
+                    LabeledContent(L.s("Henge's limit"), value: ByteText.string(UInt64(Entitlements.memoryLimitAtLaunch)))
+                    LabeledContent(L.s("Free for Henge"), value: ByteText.string(UInt64(henge_available_memory())))
                     Text(Entitlements.increasedMemory
                          ? "A Mac's memory is kept out of this limit once JIT is on. If iOS refuses that, it uses free storage instead."
                          : "This install isn't signed with the increased memory limit entitlement. Reinstall Henge with a certificate that has it. Export your Mac first if the reinstall replaces the app's data.")
@@ -64,95 +64,95 @@ struct SettingsView: View {
                 }
                 .listRowBackground(Desk.card)
                 if Device.isPad {
-                    Section("Mouse and Trackpad") {
+                    Section(L.s("Mouse and Trackpad")) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Pointer speed")
+                            Text(L.s("Pointer speed"))
                             Slider(value: $mouseSpeed, in: 0.5...3)
                         }
-                        Toggle("Reverse scrolling", isOn: $reverseScrolling)
+                        Toggle(L.s("Reverse scrolling"), isOn: $reverseScrolling)
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Scroll speed")
+                            Text(L.s("Scroll speed"))
                             Slider(value: $scrollSpeed, in: 0.1...1.5)
                         }
-                        Toggle("Swap physical right and middle buttons", isOn: $swapMouseButtons)
-                        Text("Only enable this if your physical mouse's right and middle buttons are reversed in the Mac. Touch controls stay unchanged. Restart the Mac session to apply.")
+                        Toggle(L.s("Swap physical right and middle buttons"), isOn: $swapMouseButtons)
+                        Text(L.s("Only enable this if your physical mouse's right and middle buttons are reversed in the Mac. Touch controls stay unchanged. Restart the Mac session to apply."))
                             .font(.footnote).foregroundStyle(.secondary)
-                        Text("A Magic Keyboard or a Bluetooth mouse moves the Mac's pointer. Pointer speed changes apply the next time a Mac starts; scroll speed changes apply immediately.")
+                        Text(L.s("A Magic Keyboard or a Bluetooth mouse moves the Mac's pointer. Pointer speed changes apply the next time a Mac starts; scroll speed changes apply immediately."))
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                     .listRowBackground(Desk.card)
                 }
                 if !Device.isPad {
-                    Section("Trackpad") {
-                        Picker("Input mode", selection: $inputMode) {
-                            Text("Touchscreen").tag(VolumeClicks.InputMode.touchscreen)
-                            Text("Volume buttons").tag(VolumeClicks.InputMode.volumeButtons)
+                    Section(L.s("Trackpad")) {
+                        Picker(L.s("Input mode"), selection: $inputMode) {
+                            Text(L.s("Touchscreen")).tag(VolumeClicks.InputMode.touchscreen)
+                            Text(L.s("Volume buttons")).tag(VolumeClicks.InputMode.volumeButtons)
                         }
                         .pickerStyle(.menu)
                         if inputMode == .volumeButtons {
-                            Picker("Button mode", selection: $volumeMode) {
-                                Text("Delay hold").tag(VolumeClicks.Mode.delayHold)
-                                Text("Tap then drag").tag(VolumeClicks.Mode.tapThenDrag)
-                                Text("Camera intercept").tag(VolumeClicks.Mode.intercept)
+                            Picker(L.s("Button mode"), selection: $volumeMode) {
+                                Text(L.s("Delay hold")).tag(VolumeClicks.Mode.delayHold)
+                                Text(L.s("Tap then drag")).tag(VolumeClicks.Mode.tapThenDrag)
+                                Text(L.s("Camera intercept")).tag(VolumeClicks.Mode.intercept)
                             }
                             .pickerStyle(.menu)
-                            Toggle("Swap buttons", isOn: $swapButtons)
+                            Toggle(L.s("Swap buttons"), isOn: $swapButtons)
                         }
-                        Text("Henge is able to emulate a Magic Trackpad, allowing you to perform native macOS gestures using your device's touchscreen.\n\n\(inputDescription)")
+                        Text(L.f("Henge is able to emulate a Magic Trackpad, allowing you to perform native macOS gestures using your device's touchscreen.\\n\\n%@", String(describing: inputDescription)))
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                     .listRowBackground(Desk.card)
                 }
-                Section("Performance") {
-                    Picker("Mac refresh rate", selection: $refreshRate) {
-                        Text("30 Hz").tag(30)
-                        Text("60 Hz").tag(60)
-                        Text("120 Hz").tag(120)
+                Section(L.s("Performance")) {
+                    Picker(L.s("Mac refresh rate"), selection: $refreshRate) {
+                        Text(L.s("30 Hz")).tag(30)
+                        Text(L.s("60 Hz")).tag(60)
+                        Text(L.s("120 Hz")).tag(120)
                     }
                     .pickerStyle(.segmented)
-                    Toggle("Faster disk writes", isOn: $fastFlush)
-                    Toggle("Quicker wake from idle", isOn: $wfiSpin)
-                    Toggle("Superblocks (experimental)", isOn: $superblocks)
-                    Picker("Code cache", selection: $codeCacheMB) {
-                        Text("512 MB").tag(512)
-                        Text("1 GB").tag(1024)
-                        Text("1.5 GB").tag(1536)
+                    Toggle(L.s("Faster disk writes"), isOn: $fastFlush)
+                    Toggle(L.s("Quicker wake from idle"), isOn: $wfiSpin)
+                    Toggle(L.s("Superblocks (experimental)"), isOn: $superblocks)
+                    Picker(L.s("Code cache"), selection: $codeCacheMB) {
+                        Text(L.s("512 MB")).tag(512)
+                        Text(L.s("1 GB")).tag(1024)
+                        Text(L.s("1.5 GB")).tag(1536)
                     }
-                    Text("A bigger code cache empties less often and takes more memory (about 1.75 times its size); Henge picks one by its memory limit: 1.5 GB where there is plenty, 512 MB where there is little. Applies the next time Henge opens. If JIT stops turning on, or a Mac closes Henge during setup, choose a smaller one.")
+                    Text(L.s("A bigger code cache empties less often and takes more memory (about 1.75 times its size); Henge picks one by its memory limit: 1.5 GB where there is plenty, 512 MB where there is little. Applies the next time Henge opens. If JIT stops turning on, or a Mac closes Henge during setup, choose a smaller one."))
                         .font(.footnote).foregroundStyle(.secondary)
-                    Text("macOS draws a frame for every refresh: 30 Hz leaves the most of the emulated CPU to apps, at the cost of choppier animation; 60 Hz is smoother. Faster disk writes order them without waiting for a full sync; a sudden power loss could lose the last ones. Quicker wake keeps an idle CPU watching for work for 50 µs, at some battery cost. Superblocks let translated code run past conditional branches. Changes apply the next time a Mac starts.")
-                        .font(.footnote).foregroundStyle(.secondary)
-                }
-                .listRowBackground(Desk.card)
-                Section("Instant Resume") {
-                    Toggle("Resume where you left off", isOn: $instantResume)
-                    Text("When you leave Henge, the running Mac is saved to storage, and opening it again picks up where it was in a few seconds, even after iOS closes Henge. The save is about the size of the Mac's memory in use, compressed. The Mac pauses while Henge is in the background, so its sound stops. Experimental.")
+                    Text(L.s("macOS draws a frame for every refresh: 30 Hz leaves the most of the emulated CPU to apps, at the cost of choppier animation; 60 Hz is smoother. Faster disk writes order them without waiting for a full sync; a sudden power loss could lose the last ones. Quicker wake keeps an idle CPU watching for work for 50 µs, at some battery cost. Superblocks let translated code run past conditional branches. Changes apply the next time a Mac starts."))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 .listRowBackground(Desk.card)
-                Section("Mac Apps") {
-                    Toggle("Mac apps without macOS", isOn: $macApps)
-                    Text("Bring in a .dmg or an .app (the + button on Home) and run it inside Henge through its own translation layer, without starting a Mac. Programs without windows run today; apps with windows don't yet. Experimental.")
+                Section(L.s("Instant Resume")) {
+                    Toggle(L.s("Resume where you left off"), isOn: $instantResume)
+                    Text(L.s("When you leave Henge, the running Mac is saved to storage, and opening it again picks up where it was in a few seconds, even after iOS closes Henge. The save is about the size of the Mac's memory in use, compressed. The Mac pauses while Henge is in the background, so its sound stops. Experimental."))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 .listRowBackground(Desk.card)
-                Section("Appearance") {
-                    Picker("Appearance", selection: $appearance) {
+                Section(L.s("Mac Apps")) {
+                    Toggle(L.s("Mac apps without macOS"), isOn: $macApps)
+                    Text(L.s("Bring in a .dmg or an .app (the + button on Home) and run it inside Henge through its own translation layer, without starting a Mac. Programs without windows run today; apps with windows don't yet. Experimental."))
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                .listRowBackground(Desk.card)
+                Section(L.s("Appearance")) {
+                    Picker(L.s("Appearance"), selection: $appearance) {
                         ForEach(DeskAppearance.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
-                    Text("System follows the \(Device.name)'s Light or Dark setting. Henge stays dark while a Mac is running.")
+                    Text(L.f("System follows the %@'s Light or Dark setting. Henge stays dark while a Mac is running.", String(describing: Device.name)))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 .listRowBackground(Desk.card)
-                Section("Log") {
-                    ShareLink(item: HengeLog.logFileURL) { Label("Share henge.log", systemImage: "square.and.arrow.up") }
+                Section(L.s("Log")) {
+                    ShareLink(item: HengeLog.logFileURL) { Label(L.s("Share henge.log"), systemImage: "square.and.arrow.up") }
                 }
                 .listRowBackground(Desk.card)
             }
             .scrollContentBackground(.hidden)
             .background(Desk.page)
-            .navigationTitle("Settings")
+            .navigationTitle(Text(L.s("Settings")))
         }
     }
 }

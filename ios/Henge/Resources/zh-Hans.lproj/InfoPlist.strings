@@ -1,0 +1,4 @@
+/* Henge - 简体中文权限说明。 */
+
+"NSCameraUsageDescription" = "Henge 可以把音量键当作触控板的鼠标按键使用。要接收这些按键需要开启摄像头；不会录制、保存或显示任何视频。";
+"NSLocalNetworkUsageDescription" = "Henge 使用局域网为这台 iPhone 开启 JIT，无需电脑。";

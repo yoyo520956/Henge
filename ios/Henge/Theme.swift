@@ -35,9 +35,9 @@ enum DeskAppearance: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .system: return "System"
-        case .light: return "Light"
-        case .dark: return "Dark"
+        case .system: return L.s("System")
+        case .light: return L.s("Light")
+        case .dark: return L.s("Dark")
         }
     }
     var style: UIUserInterfaceStyle {

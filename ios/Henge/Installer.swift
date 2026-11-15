@@ -258,13 +258,13 @@ final class Installer: NSObject, ObservableObject {
 
     static func stepName(_ step: Int) -> String {
         switch step {
-        case 0: return "Finding the Mac"
-        case 1: return "Starting the installer"
-        case 2: return "Writing macOS"
-        case 3: return "Checking macOS"
-        case 4: return "Installing firmware"
-        case 6, 7: return "Installing system files"
-        default: return "Installing"
+        case 0: return L.s("Finding the Mac")
+        case 1: return L.s("Starting the installer")
+        case 2: return L.s("Writing macOS")
+        case 3: return L.s("Checking macOS")
+        case 4: return L.s("Installing firmware")
+        case 6, 7: return L.s("Installing system files")
+        default: return L.s("Installing")
         }
     }
 

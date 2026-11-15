@@ -140,7 +140,7 @@ import UserNotifications
         log("code shown")
         #if compiler(>=6.2)
         if #available(iOS 26.0, *), let task = continued as? BGContinuedProcessingTask {
-            task.updateTitle("Pairing code \(pin)", subtitle: "Enter it on this \(Self.deviceKind) to pair with Henge")
+            task.updateTitle(L.f("Pairing code %@", String(describing: pin)), subtitle: L.f("Enter it on this %@ to pair with Henge", String(describing: Self.deviceKind)))
             task.progress.completedUnitCount = 1
         }
         #endif
@@ -290,7 +290,7 @@ import UserNotifications
         continued = task
         task.progress.totalUnitCount = 2
         if case .pin(let pin) = phase {
-            task.updateTitle("Pairing code \(pin)", subtitle: "Enter it on this \(Self.deviceKind) to pair with Henge")
+            task.updateTitle(L.f("Pairing code %@", String(describing: pin)), subtitle: L.f("Enter it on this %@ to pair with Henge", String(describing: Self.deviceKind)))
             task.progress.completedUnitCount = 1
         }
         task.expirationHandler = {

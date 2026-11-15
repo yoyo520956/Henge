@@ -14,8 +14,8 @@ struct MacSettingsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                DeskHeading("Name")
-                TextField("Name", text: $mac.name)
+                DeskHeading(L.s("Name"))
+                TextField(L.s("Name"), text: $mac.name)
                     .font(.system(size: 16))
                     .submitLabel(.done)
                     .padding(.horizontal, 17)
@@ -23,12 +23,12 @@ struct MacSettingsView: View {
                     .deskCard()
                     .onSubmit(save)
 
-                DeskHeading("Memory")
+                DeskHeading(L.s("Memory"))
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .firstTextBaseline) {
-                        Text("\(mac.ramMB / 1024) GB").font(.system(size: 26, weight: .bold))
+                        Text(L.f("%@ GB", String(describing: mac.ramMB / 1024))).font(.system(size: 26, weight: .bold))
                         Spacer()
-                        Text(Entitlements.increasedMemory ? "Outside the app's limit once JIT is on" : "Used from free storage if needed")
+                        Text(Entitlements.increasedMemory ? L.s("Outside the app's limit once JIT is on") : L.s("Used from free storage if needed"))
                             .font(.system(size: 13)).foregroundStyle(Desk.dim).multilineTextAlignment(.trailing)
                     }
                     Stepper("Memory", value: Binding(get: { mac.ramMB / 1024 }, set: { mac.ramMB = $0 * 1024; save() }), in: Device.memoryChoices)
@@ -40,12 +40,12 @@ struct MacSettingsView: View {
                 .padding(17)
                 .deskCard()
 
-                DeskHeading("Processors")
+                DeskHeading(L.s("Processors"))
                 Stepper(value: $cpus, in: 1...6) {
                     HStack {
-                        Text("CPUs").font(.system(size: 16))
+                        Text(L.s("CPUs")).font(.system(size: 16))
                         Spacer()
-                        Text("\(cpus)").font(.system(size: 16, weight: .semibold))
+                        Text(L.f("%@", String(describing: cpus))).font(.system(size: 16, weight: .semibold))
                     }
                 }
                 .padding(.horizontal, 17)
@@ -53,9 +53,9 @@ struct MacSettingsView: View {
                 .deskCard()
 
                 if Device.fittingScreen.height != 1080 {
-                    DeskHeading("Screen")
+                    DeskHeading(L.s("Screen"))
                     VStack(alignment: .leading, spacing: 12) {
-                        Picker("Screen", selection: Binding(get: {
+                        Picker(L.s("Screen"), selection: Binding(get: {
                             if mac.isRetina { return "retina" }
                             if mac.screen.width == Device.performanceScreen.width,
                                mac.screen.height == Device.performanceScreen.height { return "performance" }
@@ -72,33 +72,33 @@ struct MacSettingsView: View {
                             save()
                         })) {
                             if Device.isPad {
-                                Text("Retina").tag("retina")
-                                Text("Performance").tag("performance")
+                                Text(L.s("Retina")).tag("retina")
+                                Text(L.s("Performance")).tag("performance")
                             }
-                            Text("Fit this \(Device.name)").tag("fit")
-                            Text("16:9").tag("wide")
+                            Text(L.f("Fit this %@", String(describing: Device.name))).tag("fit")
+                            Text(L.s("16:9")).tag("wide")
                         }
                         .pickerStyle(.segmented)
-                        Text("\(mac.screen.width) × \(mac.screen.height). \(Device.isPad ? "Performance renders about 30% fewer pixels. " : "")Changes apply the next time this Mac starts.")
+                        Text(L.f("%@ × %@. %@Changes apply the next time this Mac starts.", String(describing: mac.screen.width), String(describing: mac.screen.height), String(describing: Device.isPad ? "Performance renders about 30% fewer pixels. " : "")))
                             .font(.system(size: 13)).foregroundStyle(Desk.dim)
                     }
                     .padding(17)
                     .deskCard()
                 }
 
-                DeskHeading("Storage")
+                DeskHeading(L.s("Storage"))
                 VStack(spacing: 11) {
                     HStack {
-                        Text("\(ByteText.string(UInt64(max(mac.bytesUsed, 0)))) used").font(.system(size: 16))
+                        Text(L.f("\\%@ used", String(describing: ByteText.string(UInt64(max(mac.bytesUsed, 0)))))).font(.system(size: 16))
                         Spacer()
-                        Text("of \(ByteText.string(UInt64(max(mac.diskBytes, 0))))").font(.system(size: 16)).foregroundStyle(Desk.dim)
+                        Text(L.f("of \\%@", String(describing: ByteText.string(UInt64(max(mac.diskBytes, 0)))))).font(.system(size: 16)).foregroundStyle(Desk.dim)
                     }
                     DeskBar(fraction: Double(mac.bytesUsed) / Double(max(mac.diskBytes, 1)))
                 }
                 .padding(17)
                 .deskCard()
 
-                DeskHeading("Manage")
+                DeskHeading(L.s("Manage"))
                 manage
             }
             .padding(.horizontal, 16)
@@ -115,13 +115,13 @@ struct MacSettingsView: View {
             case .failure(let error): machines.lastError = error.localizedDescription
             }
         }
-        .confirmationDialog("Delete \(mac.name)?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Delete", role: .destructive) {
+        .confirmationDialog(L.f("Delete %@?", String(describing: mac.name), isPresented: $confirmDelete, titleVisibility: .visible)) {
+            Button(L.s("Delete"), role: .destructive) {
                 machines.delete(mac.id)
                 dismiss()
             }
         } message: {
-            Text("Its disk is removed from this \(Device.name).")
+            Text(L.f("Its disk is removed from this %@.", String(describing: Device.name)))
         }
     }
 
@@ -129,26 +129,26 @@ struct MacSettingsView: View {
         VStack(spacing: 0) {
             if let name = machines.exporting {
                 VStack(alignment: .leading, spacing: 9) {
-                    Text("Exporting \(name)… keep Henge open").font(.system(size: 15))
+                    Text(L.f("Exporting %@… keep Henge open", String(describing: name))).font(.system(size: 15))
                     DeskBar(fraction: machines.exported)
                 }
                 .padding(17)
             } else {
-                row("Export", symbol: "square.and.arrow.up", tint: Desk.accentLight) { machines.export(mac) }
+                row(L.s("Export"), symbol: "square.and.arrow.up", tint: Desk.accentLight) { machines.export(mac) }
             }
             if let folder = machines.lastExport {
                 divider
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Saved in Files, under Henge, Exports, \(folder.lastPathComponent). Deleting Henge deletes it too, so move it somewhere else first.")
+                    Text(L.f("Saved in Files, under Henge, Exports, %@. Deleting Henge deletes it too, so move it somewhere else first.", String(describing: folder.lastPathComponent)))
                         .font(.system(size: 13)).foregroundStyle(Desk.dim)
-                    Button("Move Out of Henge…") { movingExport = true }
+                    Button(L.s("Move Out of Henge…")) { movingExport = true }
                         .font(.system(size: 15, weight: .semibold)).foregroundStyle(Desk.accentLight)
                 }
                 .padding(17)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             divider
-            row("Delete this Mac", symbol: nil, tint: Desk.bad) { confirmDelete = true }
+            row(L.s("Delete this Mac"), symbol: nil, tint: Desk.bad) { confirmDelete = true }
         }
         .deskCard()
     }
