@@ -68,7 +68,7 @@ enum JITPairingFileStore {
               let identifier = dictionary["identifier"] as? String, !identifier.isEmpty else {
             throw NSError(domain: "HengeJIT", code: 10,
                           userInfo: [NSLocalizedDescriptionKey:
-                            "That is not a remote pairing file. Make one with the StikDebug pairing-file guide and try again."])
+                            L.s("That is not a remote pairing file. Make one with the StikDebug pairing-file guide and try again.")])
         }
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try data.write(to: url, options: .atomic)
@@ -222,19 +222,19 @@ final class JITCoordinator: ObservableObject {
             } else if JITBootstrap.requestTrollStoreAttach() {
                 awaitTrollStore()
             } else {
-                error = "StikDebug is not installed. Install it, or set up Built-in StikJIT."
+                error = L.s("StikDebug is not installed. Install it, or set up Built-in StikJIT.")
                 showSetup = true
             }
         case .trollStore:
             if JITBootstrap.requestTrollStoreAttach() {
                 awaitTrollStore()
             } else {
-                error = "TrollStore could not be opened. Install Henge through TrollStore, or choose another method."
+                error = L.s("TrollStore could not be opened. Install Henge through TrollStore, or choose another method.")
                 showSetup = true
             }
         case .jailbreak:
             // Nothing to ask: a jailbreak marks an app as debugged as it opens, if it has been told to. Say what to turn on.
-            error = "Turn on Allow JIT in Apps in Dopamine's settings, then open Henge again."
+            error = L.s("Turn on Allow JIT in Apps in Dopamine's settings, then open Henge again.")
             showSetup = true
         case .builtIn:
             guard HengeBuiltInJIT.isAvailable, hasPairing else {
@@ -251,20 +251,19 @@ final class JITCoordinator: ObservableObject {
     /// it never comes -- TrollStore only answers enable-jit once its URL Scheme setting is on.
     private func awaitTrollStore() {
         busy = true
-        status = "Waiting for TrollStore to enable JIT…"
+        status = L.s("Waiting for TrollStore to enable JIT…")
         log("waiting for TrollStore's attach")
         _ = Self.waitForDebugger(timeout: 60) { [weak self] attached in
             guard let self else { return }
             busy = false
             if attached {
-                status = "JIT is on."
+                status = L.s("JIT is on.")
                 error = nil
                 attachGeneration += 1
                 log("TrollStore enabled JIT")
             } else {
                 status = nil
-                error = "TrollStore did not enable JIT. In TrollStore's Settings turn on URL Scheme, and make sure Henge was "
-                      + "installed through TrollStore (or is signed with get-task-allow)."
+                error = L.s("TrollStore did not enable JIT. In TrollStore's Settings turn on URL Scheme, and make sure Henge was installed through TrollStore (or is signed with get-task-allow).")
                 log("TrollStore did not enable JIT within a minute")
                 showSetup = true
             }
@@ -275,19 +274,19 @@ final class JITCoordinator: ObservableObject {
     /// so watch CS_DEBUGGED the same way awaitTrollStore does.
     private func awaitStikDebug() {
         busy = true
-        status = "Waiting for StikDebug to attach…"
+        status = L.s("Waiting for StikDebug to attach…")
         log("waiting for StikDebug's attach")
         _ = Self.waitForDebugger(timeout: 60) { [weak self] attached in
             guard let self else { return }
             busy = false
             if attached {
-                status = "JIT is on."
+                status = L.s("JIT is on.")
                 error = nil
                 attachGeneration += 1
                 log("StikDebug attached")
             } else {
                 status = nil
-                error = "StikDebug did not attach within a minute. Make sure it's installed and try again."
+                error = L.s("StikDebug did not attach within a minute. Make sure it's installed and try again.")
                 log("StikDebug did not attach within a minute")
                 showSetup = true
             }
@@ -301,7 +300,7 @@ final class JITCoordinator: ObservableObject {
             refreshPairingStatus()
             method = .builtIn
             prepared = false
-            status = "Pairing file imported."
+            status = L.s("Pairing file imported.")
             error = nil
             log("pairing file imported")
         } catch {
@@ -315,7 +314,7 @@ final class JITCoordinator: ObservableObject {
         refreshPairingStatus()
         method = .builtIn
         prepared = false
-        status = "Paired on this device."
+        status = L.s("Paired on this device.")
         error = nil
     }
 
@@ -326,7 +325,7 @@ final class JITCoordinator: ObservableObject {
         error = nil
         connectionProblem = nil
         advice = nil
-        if attempt == 1 { status = "Checking LocalDevVPN and the Developer Disk Image…" }
+        if attempt == 1 { status = L.s("Checking LocalDevVPN and the Developer Disk Image…") }
         RemotePairingPortDiscovery.resolve { port in
             HengeBuiltInJIT.send(.prepare(pairingData: pairing, rsdPort: port)) { [weak self] result in
                 guard let self else { return }
@@ -355,7 +354,7 @@ final class JITCoordinator: ObservableObject {
     func enableBuiltIn(attempt: Int = 1) {
         guard let pairing = builtInPairing() else { return }
         guard let script = JITBootstrap.scriptBase64 else {
-            error = "Henge's JIT script is missing from this installation. Reinstall Henge."
+            error = L.s("Henge's JIT script is missing from this installation. Reinstall Henge.")
             return
         }
 
@@ -364,7 +363,7 @@ final class JITCoordinator: ObservableObject {
         error = nil
         connectionProblem = nil
         advice = nil
-        if attempt == 1 { status = "Starting Henge's JIT helper…" }
+        if attempt == 1 { status = L.s("Starting Henge's JIT helper…") }
         log("enabling JIT with the built-in helper" + (attempt > 1 ? " (attempt \(attempt))" : ""))
         var readiness: Timer?
         var finished = false
@@ -379,7 +378,7 @@ final class JITCoordinator: ObservableObject {
                 log("built-in JIT failed: \(failure)")
                 showSetup = true
             } else {
-                status = "JIT is on."
+                status = L.s("JIT is on.")
                 error = nil
                 attachGeneration += 1
                 log("built-in helper attached")
@@ -390,10 +389,9 @@ final class JITCoordinator: ObservableObject {
             HengeBuiltInJIT.send(
                 .enable(targetPID: getpid(), pairingData: pairing, scriptBase64: script, rsdPort: port),
                 started: { [weak self] in
-                    if attempt == 1 { self?.status = "Waiting for the helper to attach…" }
+                    if attempt == 1 { self?.status = L.s("Waiting for the helper to attach…") }
                     readiness = Self.waitForDebugger { attached in
-                        finish(attached ? nil : "The helper did not attach within 90 seconds. "
-                                              + "Check that LocalDevVPN is connected, then try again.")
+                        finish(attached ? nil : L.s("The helper did not attach within 90 seconds. Check that LocalDevVPN is connected, then try again."))
                     }
                 },
                 completion: { [weak self] result in
@@ -424,7 +422,7 @@ final class JITCoordinator: ObservableObject {
     func resetDDI() {
         busy = true
         error = nil
-        status = "Resetting the Developer Disk Image cache…"
+        status = L.s("Resetting the Developer Disk Image cache…")
         HengeBuiltInJIT.send(.resetDDI) { [weak self] result in
             guard let self else { return }
             busy = false
@@ -446,7 +444,7 @@ final class JITCoordinator: ObservableObject {
             return nil
         }
         guard let pairing = try? JITPairingFileStore.data() else {
-            error = "Pair this device or import its pairing file first."
+            error = L.s("Pair this device or import its pairing file first.")
             return nil
         }
         return pairing
@@ -520,7 +518,7 @@ enum LocalDevVPN {
         }
         return false
     }
-    static var actionTitle: String { isInstalled ? "Connect LocalDevVPN" : "Get LocalDevVPN" }
+    static var actionTitle: String { isInstalled ? L.s("Connect LocalDevVPN") : L.s("Get LocalDevVPN") }
 
     @MainActor static func open() {
         let installed = isInstalled
