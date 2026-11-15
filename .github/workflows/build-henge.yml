@@ -13,9 +13,16 @@
 
 name: Build Henge IPA
 
-# Manual only (Actions tab > Build Henge IPA > Run workflow): pushes to main don't build an IPA.
+# Manual (Actions tab) or push to main triggers a build.
 on:
   workflow_dispatch: {}
+  push:
+    branches: [main]
+
+# Avoid multiple queued builds on the same branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   HUSK: ${{ github.workspace }}/Husk
@@ -26,11 +33,9 @@ env:
 
 jobs:
   build:
-    # Xcode 27 image (arm64, GA since Oct 2026). Plain `xcode-27` is a standard
-    # runner, so it's free on public repos; `xcode-27-xlarge` is a paid larger
-    # runner. Table: https://github.com/actions/runner-images#available-images
-    runs-on: xcode-27
-    timeout-minutes: 120
+    # macOS 13 (Xcode 15.2) is stable, supports iOS 17+, and is free on public repos.
+    runs-on: macos-13
+    timeout-minutes: 180
 
     steps:
       - name: Check out Henge (this fork)
@@ -66,8 +71,18 @@ jobs:
             rustup target add aarch64-apple-ios
           }
 
-      # build_ios.sh builds from third_party/build/<name>; the sources are
-      # fetched by fetch_sources.sh, which Husk's own ci_build.sh runs first.
+      - name: Select Xcode 15.x (avoid Xcode 26+ Foundation SDK issues)
+        run: |
+          set -euo pipefail
+          for ver in 15.4 15.3 15.2 15.1 15.0; do
+            if [ -d "/Applications/Xcode_${ver}.app" ]; then
+              sudo xcode-select -s "/Applications/Xcode_${ver}.app"
+              echo "Selected Xcode ${ver}"
+              break
+            fi
+          done
+          xcodebuild -version
+
       - name: Fetch Husk's third-party sources
         working-directory: Husk
         run: bash scripts/fetch_sources.sh
@@ -97,9 +112,20 @@ jobs:
         working-directory: Henge
         run: make ios-lib
 
-      - name: Package Henge.ipa
+      - name: Package Henge.ipa (with Xcode 15.x)
         working-directory: Henge
-        run: zsh ios/scripts/package_ipa.sh
+        run: |
+          set -euo pipefail
+          # Ensure Xcode 15.x is selected for this shell and all subprocesses
+          for ver in 15.4 15.3 15.2 15.1 15.0; do
+            if [ -d "/Applications/Xcode_${ver}.app" ]; then
+              sudo xcode-select -s "/Applications/Xcode_${ver}.app"
+              echo "Selected Xcode ${ver}"
+              break
+            fi
+          done
+          echo "Using Xcode: $(xcodebuild -version | head -1)"
+          zsh ios/scripts/package_ipa.sh
 
       - name: Upload Henge.ipa
         uses: actions/upload-artifact@v4
@@ -108,9 +134,18 @@ jobs:
           path: /Users/runner/Desktop/Henge.ipa
           if-no-files-found: error
 
-      - name: Package Henge.tipa
+      - name: Package Henge.tipa (with Xcode 15.x)
         working-directory: Henge
-        run: zsh ios/scripts/package_ipa.sh --trollstore
+        run: |
+          set -euo pipefail
+          for ver in 15.4 15.3 15.2 15.1 15.0; do
+            if [ -d "/Applications/Xcode_${ver}.app" ]; then
+              sudo xcode-select -s "/Applications/Xcode_${ver}.app"
+              echo "Selected Xcode ${ver}"
+              break
+            fi
+          done
+          zsh ios/scripts/package_ipa.sh --trollstore
 
       - name: Upload Henge.tipa
         uses: actions/upload-artifact@v4
