@@ -15,6 +15,7 @@ struct SettingsView: View {
     @AppStorage(EngineTuning.wfiSpinKey) private var wfiSpin = false
     @AppStorage(EngineTuning.superblocksKey) private var superblocks = false
     @AppStorage(JITBootstrap.codeCacheKey) private var codeCacheMB = JITBootstrap.defaultCodeCacheMB
+    @AppStorage(LowMemoryProfile.modeKey) private var memoryProfile = 0
     @AppStorage(DeskAppearance.key) private var appearance = DeskAppearance.system
     @AppStorage(InstantResume.key) private var instantResume = false
     @AppStorage(MacAppsFeature.key) private var macApps = false
@@ -38,11 +39,11 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section(L.s("JIT")) {
-                    LabeledContent(L.s("Status"), value: JITBootstrap.ready ? "On" : "Off")
+                    LabeledContent("Status", value: JITBootstrap.ready ? L.s("On") : L.s("Off"))
                     Picker(L.s("Method"), selection: $jit.method) {
                         ForEach(JITMethod.allCases) { Text($0.title).tag($0) }
                     }
-                    Text(jit.method == .automatic ? jit.automaticDescription : L.f("Henge uses %@.", String(describing: jit.method.title)))
+                    Text(jit.method == .automatic ? jit.automaticDescription : L.f("Henge uses %@.", jit.method.title))
                         .font(.footnote).foregroundStyle(.secondary)
                     Button(L.s("Set up JIT")) { jit.showSetup = true }
                     Toggle(L.s("Turn on JIT when Henge opens"), isOn: $jitAtLaunch)
@@ -50,16 +51,29 @@ struct SettingsView: View {
                         Text(L.s("Henge connects LocalDevVPN first when it is off, and comes back."))
                             .font(.footnote).foregroundStyle(.secondary)
                     }
-                    LabeledContent(L.s("Code region"), value: "\(JITBootstrap.jitBytes >> 20) MB, claimed once per launch")
+                    LabeledContent(L.s("Code region"), value: L.f("%lld MB, claimed once per launch", JITBootstrap.jitBytes >> 20))
                 }
                 .listRowBackground(Desk.card)
                 Section(L.s("Memory")) {
-                    LabeledContent(L.s("Extra memory"), value: Entitlements.increasedMemory ? "On" : "Off")
+                    LabeledContent(L.s("Extra memory"), value: Entitlements.increasedMemory ? L.s("On") : L.s("Off"))
                     LabeledContent(L.s("Henge's limit"), value: ByteText.string(UInt64(Entitlements.memoryLimitAtLaunch)))
                     LabeledContent(L.s("Free for Henge"), value: ByteText.string(UInt64(henge_available_memory())))
                     Text(Entitlements.increasedMemory
-                         ? "A Mac's memory is kept out of this limit once JIT is on. If iOS refuses that, it uses free storage instead."
-                         : "This install isn't signed with the increased memory limit entitlement. Reinstall Henge with a certificate that has it. Export your Mac first if the reinstall replaces the app's data.")
+                         ? L.s("A Mac's memory is kept out of this limit once JIT is on. If iOS refuses that, it uses free storage instead.")
+                         : L.s("This install isn't signed with the increased memory limit entitlement. Reinstall Henge with a certificate that has it. Export your Mac first if the reinstall replaces the app's data."))
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                .listRowBackground(Desk.card)
+                Section(L.s("Memory profile")) {
+                    Picker(L.s("Profile"), selection: $memoryProfile) {
+                        ForEach([LowMemoryProfile.Mode.auto, .low, .balanced, .performance]) { Text(L.s($0.key)).tag($0.rawValue) }
+                    }
+                    .pickerStyle(.menu)
+                    LabeledContent(L.s("Active profile"), value: L.s(LowMemoryProfile.active.key))
+                    LabeledContent(L.s("Recommended Mac memory"), value: L.f("%lld GB", Device.suggestedRAMGB))
+                    Text(LowMemoryProfile.active == .low
+                         ? L.s("The device is short of memory, or this install's limit is under 3 GB: Henge picks a 512 MB code cache and a 30 Hz display by default, and caps the installer's temporary Mac at 2 GB. A 2 GB Mac is the most this device is likely to keep up. Choose a larger cache only if the Mac closes Henge mid-setup.")
+                         : L.s("Auto picks the code cache and refresh rate the device has room for. Changes apply the next time a Mac starts."))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 .listRowBackground(Desk.card)
@@ -98,7 +112,7 @@ struct SettingsView: View {
                             .pickerStyle(.menu)
                             Toggle(L.s("Swap buttons"), isOn: $swapButtons)
                         }
-                        Text(L.f("Henge is able to emulate a Magic Trackpad, allowing you to perform native macOS gestures using your device's touchscreen.\\n\\n%@", String(describing: inputDescription)))
+                        Text(L.f("Henge is able to emulate a Magic Trackpad, allowing you to perform native macOS gestures using your device's touchscreen.\n\n%@", inputDescription))
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                     .listRowBackground(Desk.card)
@@ -118,7 +132,7 @@ struct SettingsView: View {
                         Text(L.s("1 GB")).tag(1024)
                         Text(L.s("1.5 GB")).tag(1536)
                     }
-                    Text(L.s("A bigger code cache empties less often and takes more memory (about 1.75 times its size); Henge picks one by its memory limit: 1.5 GB where there is plenty, 512 MB where there is little. Applies the next time Henge opens. If JIT stops turning on, or a Mac closes Henge during setup, choose a smaller one."))
+                    Text(L.s("A bigger code cache empties less often and takes more memory (about 1.75 times its size); Henge picks one by the Memory profile above: 512 MB where there is little room, 1.5 GB where there is plenty. Applies the next time Henge opens. If a Mac closes Henge during setup, choose a smaller one."))
                         .font(.footnote).foregroundStyle(.secondary)
                     Text(L.s("macOS draws a frame for every refresh: 30 Hz leaves the most of the emulated CPU to apps, at the cost of choppier animation; 60 Hz is smoother. Faster disk writes order them without waiting for a full sync; a sudden power loss could lose the last ones. Quicker wake keeps an idle CPU watching for work for 50 µs, at some battery cost. Superblocks let translated code run past conditional branches. Changes apply the next time a Mac starts."))
                         .font(.footnote).foregroundStyle(.secondary)
@@ -141,7 +155,7 @@ struct SettingsView: View {
                         ForEach(DeskAppearance.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
-                    Text(L.f("System follows the %@'s Light or Dark setting. Henge stays dark while a Mac is running.", String(describing: Device.name)))
+                    Text(L.f("System follows the %@'s Light or Dark setting. Henge stays dark while a Mac is running.", Device.name))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 .listRowBackground(Desk.card)
