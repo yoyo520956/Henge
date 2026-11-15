@@ -422,3 +422,11 @@
 "macOS won't run on this %@. Henge needs an A14 or M1 chip or newer." = "这台 %@ 跑不了 macOS。Henge 需要 A14、M1 或更新的芯片。";
 "no answer" = "无回应";
 "tab" = "tab";
+"Heartbeat" = "心跳";
+"Check interval" = "检查间隔";
+"%lld minutes" = "%lld 分钟";
+"Checks so far" = "已检查次数";
+"Henge's memory" = "Henge 占用内存";
+"Mac's memory" = "Mac 占用内存";
+"Last check" = "上次检查";
+"Every few minutes Henge checks its own memory, the running Mac's memory and its log, and trims the log when it grows too large. This keeps iOS from closing Henge on a phone with little memory. iOS decides when a backgrounded app may run, so the checks are exact while Henge is open and best-effort when it is not." = "Henge 每隔几分钟检查一次自身内存、运行中 Mac 的内存和日志，日志过大时自动裁剪。这能避免在内存紧张的设备上被 iOS 关闭。iOS 决定后台 App 何时可运行，因此 Henge 在前台时检查精确，后台时尽力而为。";
