@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
-# Rebuild StikJIT 2.0.1 with full-width debugserver addresses. Its shipped
-# nine-digit packet format truncates JIT mappings above 0xfffffffff on iPads.
+# Rebuild StikJIT 1.9.0 with full-width debugserver addresses.
 set -euo pipefail
 
 HENGE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 STIKJIT_ROOT="${1:?StikJIT checkout path required}"
 
-git clone --depth 1 --branch 2.0.1 https://github.com/StikDebug/StikJIT.git "$STIKJIT_ROOT"
+git clone --depth 1 --branch 1.9.0 https://github.com/StikDebug/StikJIT.git "$STIKJIT_ROOT"
 # Verify we got the right tag
-test "$(git -C "$STIKJIT_ROOT" describe --tags)" = "2.0.1"
+test "$(git -C "$STIKJIT_ROOT" describe --tags)" = "1.9.0"
 git -C "$STIKJIT_ROOT" apply "$HENGE_ROOT/ci/stikjit-high-address.patch"
 
 cd "$STIKJIT_ROOT"
