@@ -43,13 +43,13 @@ enum HengeBuiltInJIT {
 
     static var unavailableReason: String? {
 #if targetEnvironment(simulator)
-        return "Built-in JIT is available only on a physical device."
+        return L.s("Built-in JIT is available only on a physical device.")
 #else
         guard #available(iOS 26.0, *) else {
-            return "Built-in JIT needs iOS 26 or later. Use StikDebug instead."
+            return L.s("Built-in JIT needs iOS 26 or later. Use StikDebug instead.")
         }
         if getenv("LC_HOME_PATH") != nil {
-            return "Built-in JIT is unavailable inside LiveContainer. Use StikDebug instead."
+            return L.s("Built-in JIT is unavailable inside LiveContainer. Use StikDebug instead.")
         }
         return nil
 #endif

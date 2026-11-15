@@ -42,18 +42,18 @@ struct HomeView: View {
                 .deskColumn()
             }
             .background(Desk.page)
-            .navigationTitle("Henge")
+            .navigationTitle(Text(L.s("Henge")))
             .navigationDestination(for: VirtualMac.self) { MacSettingsView(mac: $0) }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
-                        Button("Install macOS…") { tab = .install }
-                        Button("Bring in a Mac from a computer…") { picking = true }
-                        if macApps { Button("Mac Apps…") { showMacApps = true } }
+                        Button(L.s("Install macOS…")) { tab = .install }
+                        Button(L.s("Bring in a Mac from a computer…")) { picking = true }
+                        if macApps { Button(L.s("Mac Apps…")) { showMacApps = true } }
                     } label: {
                         Image(systemName: "plus")
                     }
-                    .accessibilityLabel("Add a Mac")
+                    .accessibilityLabel(L.s("Add a Mac"))
                 }
             }
             .fileImporter(isPresented: $picking, allowedContentTypes: [.folder]) { result in
@@ -95,11 +95,11 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 190)
                 .background(Desk.raised.opacity(0.5), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            Text("No Mac yet").font(.system(size: 24, weight: .bold))
-            Text("Install macOS on this \(Device.name), or bring in a Mac made on a computer.")
+            Text(L.s("No Mac yet")).font(.system(size: 24, weight: .bold))
+            Text(L.f("Install macOS on this %@, or bring in a Mac made on a computer.", String(describing: Device.name)))
                 .font(.system(size: 15)).foregroundStyle(Desk.dim).multilineTextAlignment(.center)
-            Button("Install macOS") { tab = .install }.buttonStyle(DeskButtonStyle())
-            Button("Bring in a Mac") { picking = true }
+            Button(L.s("Install macOS")) { tab = .install }.buttonStyle(DeskButtonStyle())
+            Button(L.s("Bring in a Mac")) { picking = true }
                 .font(.system(size: 15, weight: .semibold)).foregroundStyle(Desk.accentLight)
         }
         .padding(14)
@@ -109,7 +109,7 @@ struct HomeView: View {
     @ViewBuilder private func others(besides shown: VirtualMac) -> some View {
         let rest = machines.all.filter { $0.id != shown.id }
         if !rest.isEmpty {
-            DeskHeading("Other Macs")
+            DeskHeading(L.s("Other Macs"))
             VStack(spacing: 0) {
                 ForEach(rest) { other in
                     Button { chosen = other.id } label: {
@@ -139,9 +139,9 @@ extension VirtualMac {
     }
 
     var lastUsedText: String {
-        guard let lastUsed else { return "Never" }
-        if Calendar.current.isDateInToday(lastUsed) { return "Today" }
-        if Calendar.current.isDateInYesterday(lastUsed) { return "Yesterday" }
+        guard let lastUsed else { return L.s("Never") }
+        if Calendar.current.isDateInToday(lastUsed) { return L.s("Today") }
+        if Calendar.current.isDateInYesterday(lastUsed) { return L.s("Yesterday") }
         return lastUsed.formatted(.dateTime.month(.abbreviated).day())
     }
 
@@ -170,7 +170,7 @@ private struct MacHero: View {
                     HStack {
                         Text(mac.name).font(.system(size: 24, weight: .bold)).foregroundStyle(Desk.text).lineLimit(1)
                         Spacer()
-                        Text(jitReady ? "JIT on" : "JIT off")
+                        Text(jitReady ? L.s("JIT on") : L.s("JIT off"))
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(jitReady ? Desk.good : Desk.warn)
                             .padding(.horizontal, 11)
@@ -180,7 +180,7 @@ private struct MacHero: View {
                     }
                     .padding(.top, 15)
                     .padding(.horizontal, 5)
-                    Text("\(mac.summary) · \(cpus) CPUs")
+                    Text(L.f("%@ · %@ CPUs", String(describing: mac.summary), String(describing: cpus)))
                         .font(.system(size: 15))
                         .foregroundStyle(Desk.dim)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -192,9 +192,9 @@ private struct MacHero: View {
             if jitReady {
                 Button(action: start) {
                     if InstantResume.enabled && InstantResume.hasSave(for: mac) {
-                        Label("Resume", systemImage: "play.fill")
+                        Label(L.s("Resume"), systemImage: "play.fill")
                     } else {
-                        Label("Start", systemImage: "play.fill")
+                        Label(L.s("Start"), systemImage: "play.fill")
                     }
                 }
                 .buttonStyle(DeskButtonStyle())
@@ -206,7 +206,7 @@ private struct MacHero: View {
                         .padding(.horizontal, 5)
                         .padding(.top, 10)
                 }
-                Button("Turn On JIT", action: turnOnJIT)
+                Button(L.s("Turn On JIT"), action: turnOnJIT)
                     .buttonStyle(DeskButtonStyle())
                     .padding(.top, 15)
             }

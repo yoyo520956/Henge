@@ -153,7 +153,7 @@ struct MacAppsView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 0) {
-                    Text("Mac apps and programs run here through Henge's own translation layer, with no Mac started. Programs without windows run today; apps with windows are next. Experimental.")
+                    Text(L.s("Mac apps and programs run here through Henge's own translation layer, with no Mac started. Programs without windows run today; apps with windows are next. Experimental."))
                         .font(.system(size: 14)).foregroundStyle(Desk.dim)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 4).padding(.bottom, 12)
@@ -162,8 +162,8 @@ struct MacAppsView: View {
                     if store.apps.isEmpty && store.busy == nil {
                         VStack(spacing: 10) {
                             Image(systemName: "shippingbox").font(.system(size: 34)).foregroundStyle(Desk.faint)
-                            Text("Nothing here yet").font(.system(size: 17, weight: .semibold))
-                            Text("Bring in a .dmg or an .app from Files, or try Henge's sample programs.")
+                            Text(L.s("Nothing here yet")).font(.system(size: 17, weight: .semibold))
+                            Text(L.s("Bring in a .dmg or an .app from Files, or try Henge's sample programs."))
                                 .font(.system(size: 14)).foregroundStyle(Desk.dim).multilineTextAlignment(.center)
                         }
                         .padding(28).frame(maxWidth: .infinity).deskCard()
@@ -171,18 +171,18 @@ struct MacAppsView: View {
                     ForEach(store.apps) { app in
                         NavigationLink(value: app) { MacAppRow(app: app) }.buttonStyle(.plain).padding(.bottom, 10)
                     }
-                    Button("Add the Sample Programs") { store.addSamples() }
+                    Button(L.s("Add the Sample Programs")) { store.addSamples() }
                         .buttonStyle(DeskButtonStyle()).padding(.top, 8)
                 }
                 .padding(.horizontal, 16).padding(.vertical, 12).deskColumn()
             }
             .background(Desk.page)
-            .navigationTitle("Mac Apps")
+            .navigationTitle(Text(L.s("Mac Apps")))
             .navigationDestination(for: MacApp.self) { MacAppRunView(app: $0) }
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(L.s("Done")) { dismiss() } }
                 ToolbarItem(placement: .primaryAction) {
-                    Button { picking = true } label: { Image(systemName: "plus") }.accessibilityLabel("Bring in a Mac app")
+                    Button { picking = true } label: { Image(systemName: "plus") }.accessibilityLabel(L.s("Bring in a Mac app"))
                 }
             }
             .fileImporter(isPresented: $picking, allowedContentTypes: [.diskImage, .applicationBundle, .folder, .unixExecutable, .data]) { result in
@@ -229,23 +229,23 @@ struct MacAppRunView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading).padding(17).deskCard()
 
-                DeskHeading("About")
+                DeskHeading(L.s("About"))
                 VStack(alignment: .leading, spacing: 6) {
-                    if !app.identifier.isEmpty { LabeledContent("Identifier", value: app.identifier) }
-                    LabeledContent("Code", value: [app.arm64 ? "Apple silicon" : nil, app.intel ? "Intel" : nil].compactMap { $0 }.joined(separator: " and "))
-                    if !app.minMacOS.isEmpty { LabeledContent("Needs macOS", value: app.minMacOS + " or later") }
+                    if !app.identifier.isEmpty { LabeledContent(L.s("Identifier"), value: app.identifier) }
+                    LabeledContent(L.s("Code"), value: [app.arm64 ? "Apple silicon" : nil, app.intel ? "Intel" : nil].compactMap { $0 }.joined(separator: " and "))
+                    if !app.minMacOS.isEmpty { LabeledContent(L.s("Needs macOS"), value: app.minMacOS + " or later") }
                 }
                 .font(.system(size: 15)).padding(17).deskCard()
 
                 if app.canRun {
-                    Button(running ? "Running…" : "Run") { run() }
+                    Button(running ? L.s("Running…") : L.s("Run")) { run() }
                         .buttonStyle(DeskButtonStyle()).disabled(running || (result == nil && henge_tl_ran_program() != 0)).padding(.top, 16)
-                    Text("Programs run inside Henge, one per launch. After one has run, quit Henge and open it again to run another or to start a Mac.")
+                    Text(L.s("Programs run inside Henge, one per launch. After one has run, quit Henge and open it again to run another or to start a Mac."))
                         .font(.system(size: 13)).foregroundStyle(Desk.dim).frame(maxWidth: .infinity, alignment: .leading).padding(.top, 8)
                     if result != nil || !output.isEmpty {
-                        DeskHeading("Output")
+                        DeskHeading(L.s("Output"))
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(output.isEmpty ? "(nothing printed)" : output)
+                            Text(output.isEmpty ? L.s("(nothing printed)") : output)
                                 .font(.system(size: 12, design: .monospaced)).textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             if let result { Text(result).font(.system(size: 13, weight: .semibold)).foregroundStyle(Desk.dim) }
@@ -254,20 +254,20 @@ struct MacAppRunView: View {
                     }
                 }
                 if app.canOpenWindowed {
-                    Button("Open (experimental)") { showScreen = true }
+                    Button(L.s("Open (experimental)")) { showScreen = true }
                         .buttonStyle(DeskButtonStyle()).disabled(henge_tl_ran_program() != 0).padding(.top, 16)
-                    Text("It runs inside Henge, one app per launch, without a Mac. Tap to click, scroll with one finger, drag with two, hold for a right click; the keyboard button brings up the keyboard. Quit Henge (swipe it away) to stop it.")
+                    Text(L.s("It runs inside Henge, one app per launch, without a Mac. Tap to click, scroll with one finger, drag with two, hold for a right click; the keyboard button brings up the keyboard. Quit Henge (swipe it away) to stop it."))
                         .font(.system(size: 13)).foregroundStyle(Desk.dim).frame(maxWidth: .infinity, alignment: .leading).padding(.top, 8)
                 }
-                Button("Delete", role: .destructive) { confirmDelete = true }.padding(.top, 24)
+                Button(L.s("Delete"), role: .destructive) { confirmDelete = true }.padding(.top, 24)
             }
             .padding(.horizontal, 16).padding(.vertical, 12).deskColumn()
         }
         .background(Desk.page)
         .navigationTitle(app.name)
         .fullScreenCover(isPresented: $showScreen) { MacAppScreen(app: app) }
-        .confirmationDialog("Delete \(app.name)?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Delete", role: .destructive) { store.delete(app); dismiss() }
+        .confirmationDialog(L.f("Delete %@?", String(describing: app.name), isPresented: $confirmDelete, titleVisibility: .visible)) {
+            Button(L.s("Delete"), role: .destructive) { store.delete(app); dismiss() }
         }
     }
 

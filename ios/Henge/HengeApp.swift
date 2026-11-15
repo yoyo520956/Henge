@@ -49,13 +49,13 @@ struct RootView: View {
         ZStack {
             TabView(selection: $tab) {
                 HomeView(running: $running, tab: $tab)
-                    .tabItem { Label("Macs", systemImage: "macwindow") }
+                    .tabItem { Label(L.s("Macs"), systemImage: "macwindow") }
                     .tag(Tab.macs)
                 InstallView()
-                    .tabItem { Label("Install", systemImage: "arrow.down.circle") }
+                    .tabItem { Label(L.s("Install"), systemImage: "arrow.down.circle") }
                     .tag(Tab.install)
                 SettingsView()
-                    .tabItem { Label("Settings", systemImage: "gearshape") }
+                    .tabItem { Label(L.s("Settings"), systemImage: "gearshape") }
                     .tag(Tab.settings)
             }
             .tint(Desk.accentLight)

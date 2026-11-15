@@ -16,11 +16,11 @@ enum JITMethod: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .automatic: return "Automatic"
-        case .stikDebug: return "StikDebug"
-        case .trollStore: return "TrollStore"
-        case .jailbreak: return "Jailbreak (Dopamine)"
-        case .builtIn: return "Built-in StikJIT"
+        case .automatic: return L.s("Automatic")
+        case .stikDebug: return L.s("StikDebug")
+        case .trollStore: return L.s("TrollStore")
+        case .jailbreak: return L.s("Jailbreak (Dopamine)")
+        case .builtIn: return L.s("Built-in StikJIT")
         }
     }
 }
@@ -130,12 +130,12 @@ final class JITCoordinator: ObservableObject {
 
     var automaticDescription: String {
         switch resolvedMethod {
-        case .stikDebug: return "StikDebug is installed, so Henge will open it."
-        case .trollStore: return "TrollStore is installed, so Henge will ask it to enable JIT."
-        case .jailbreak: return "This device is jailbroken, so JIT comes from the jailbreak's Allow JIT in Apps setting."
+        case .stikDebug: return L.s("StikDebug is installed, so Henge will open it.")
+        case .trollStore: return L.s("TrollStore is installed, so Henge will ask it to enable JIT.")
+        case .jailbreak: return L.s("This device is jailbroken, so JIT comes from the jailbreak's Allow JIT in Apps setting.")
         default: return hasPairing
-            ? "Henge will use its paired built-in helper."
-            : "StikDebug, TrollStore and a jailbreak were not found, so Henge will use its built-in helper."
+            ? L.s("Henge will use its paired built-in helper.")
+            : L.s("StikDebug, TrollStore and a jailbreak were not found, so Henge will use its built-in helper.")
         }
     }
 

@@ -210,7 +210,7 @@ struct JITSetupFlow: View {
                 Text(pin).font(.system(size: 40, weight: .bold, design: .monospaced)).tracking(6)
                     .foregroundStyle(Theme.text)
                     .textSelection(.enabled)
-                    .accessibilityLabel("Pairing code \(pin.map(String.init).joined(separator: " "))")
+                    .accessibilityLabel(L.f("Pairing code %@", String(describing: pin.map(String.init).joined(separator: " "))))
             }
             .frame(maxWidth: .infinity)
             .padding(18).hengeCard(high: true)
