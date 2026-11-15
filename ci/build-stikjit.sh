@@ -6,16 +6,18 @@
 # Xcode 27. Its .swiftinterface uses Swift 6.2-era syntax that Xcode 16.4's
 # Swift 6.0 cannot parse, so importing StikJIT fails before Henge compiles.
 #
-# Why the DDI patch: StikJIT's module is named `StikJIT` and it also declares
-# `public enum StikJIT`. When the Swift interface is emitted, references to the
-# module-level `DDIPaths` inside that enum are qualified as `StikJIT.DDIPaths`.
-# A Swift 6.0 compiler reading that interface resolves the prefix to the enum
-# rather than to the module and fails with:
+# Why the module rename: upstream's module is named `StikJIT` and it also
+# declares `public enum StikJIT`. When Xcode 16.4 emits the .swiftinterface,
+# references to the module-level `DDIPaths` inside that enum are qualified as
+# `StikJIT.DDIPaths`. A Swift 6.0 compiler reading that interface resolves the
+# prefix to the enum rather than to the module and fails with:
 #     error: 'DDIPaths' is not a member type of enum 'StikJIT.StikJIT'
 # Upstream never hits this because their prebuilt framework was made with
-# Xcode 27, whose compiler emits an unambiguous interface. The patch writes
-# `Swift.DDIPaths` explicitly in the public signatures, which removes the
-# ambiguity in every compiler.
+# Xcode 27, whose compiler emits `StikJIT::DDIPaths` (C++-style, unambiguous).
+# Renaming the Swift module to StikJITKit removes the ambiguity for every
+# compiler. The framework binary stays StikJIT.framework, so the xcframework
+# layout, the Embed StikJIT phase and the Husk layout are untouched; only
+# `import StikJIT` in Henge becomes `import StikJITKit`.
 #
 # BUILD_LIBRARY_FOR_DISTRIBUTION must stay ON: `xcodebuild -create-xcframework`
 # refuses a framework that has no .swiftinterface (exit 70).
@@ -30,8 +32,8 @@ test "$(git -C "$STIKJIT_ROOT" describe --tags)" = "2.0.1"
 # Full-width debugserver addresses: the shipped nine-digit packet format
 # truncates JIT mappings above 0xfffffffff on iPads.
 git -C "$STIKJIT_ROOT" apply "$HENGE_ROOT/ci/stikjit-high-address.patch"
-# Disambiguate DDIPaths in the emitted .swiftinterface (see above).
-git -C "$STIKJIT_ROOT" apply "$HENGE_ROOT/ci/stikjit-ddi-module-qualifier.patch"
+# Give the Swift module a different name from the public enum inside it.
+git -C "$STIKJIT_ROOT" apply "$HENGE_ROOT/ci/stikjit-module-rename.patch"
 
 cd "$STIKJIT_ROOT"
 xcodegen generate
