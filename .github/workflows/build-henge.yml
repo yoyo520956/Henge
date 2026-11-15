@@ -103,6 +103,18 @@ jobs:
         working-directory: Henge
         run: zsh ios/scripts/fetch_deps.sh
 
+      # Husk's vendored StikJIT.xcframework was built with Xcode 27, whose
+      # .swiftinterface Xcode 16's Swift can't parse. Rebuild it with THIS
+      # Xcode so interface and compiler match (also gets the high-address
+      # patch for iPad JIT mappings).
+      - name: Rebuild StikJIT.xcframework with this Xcode
+        working-directory: Henge
+        run: |
+          set -euo pipefail
+          bash ci/build-stikjit.sh "$RUNNER_TEMP/stikjit"
+          rm -rf ios/deps/StikJIT.xcframework
+          cp -R "$RUNNER_TEMP/stikjit/StikJIT.xcframework" ios/deps/StikJIT.xcframework
+
       - name: Build the restore stack (libirecovery, usbmuxd, idevicerestore)
         working-directory: Henge
         run: zsh tools/build_ios_restore.sh
