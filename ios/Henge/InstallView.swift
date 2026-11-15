@@ -24,7 +24,7 @@ struct InstallView: View {
                     switch installer.phase {
                     case .idle: chooser
                     case .checking:
-                        ProgressView("Preparing to install macOS…")
+                        ProgressView(L.s("Preparing to install macOS…"))
                             .padding(20)
                     case .downloading, .preparing, .installing: progress
                     case .done(let text): finished(text)
@@ -64,7 +64,7 @@ struct InstallView: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(L.f("Delete the %@ download", String(describing: r.name)))
+                        .accessibilityLabel(L.f("Delete the %@ download", r.name))
                         .padding(.trailing, 6)
                     }
                 }
@@ -97,7 +97,7 @@ struct InstallView: View {
                 HStack {
                     Text(L.s("Memory")).font(.system(size: 16))
                     Spacer()
-                    Text(L.f("%@ GB", String(describing: ramGB))).font(.system(size: 16, weight: .semibold))
+                    Text(L.f("%lld GB", ramGB)).font(.system(size: 16, weight: .semibold))
                 }
             }
             .padding(.horizontal, 17)
@@ -124,8 +124,8 @@ struct InstallView: View {
         .buttonStyle(DeskButtonStyle(enabled: jitReady && !Device.chipTooOld))
         .disabled(!jitReady || Device.chipTooOld)
         .padding(.top, 20)
-        Text(Device.chipTooOld ? Device.chipTooOldText : jitReady ? L.f("Keep Henge open and the %@ plugged in. Needs about %@ free.", String(describing: Device.name), String(describing: ByteText.string(UInt64(Installer.spaceNeeded(release)))))
-                                : (JITBootstrap.lastFailure.map(L.s) ?? L.f("Turn on JIT first. %@", String(describing: jit.automaticDescription))))
+        Text(Device.chipTooOld ? Device.chipTooOldText : jitReady ? L.f("Keep Henge open and the %@ plugged in. Needs about %@ free.", Device.name, ByteText.string(UInt64(Installer.spaceNeeded(release))))
+                                : (JITBootstrap.lastFailure.map(L.s) ?? L.f("Turn on JIT first. %@", jit.automaticDescription)))
             .font(.system(size: 13))
             .foregroundStyle(Desk.dim)
             .multilineTextAlignment(.center)
@@ -143,12 +143,12 @@ struct InstallView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(r.name).font(.system(size: 16, weight: .medium)).foregroundStyle(Desk.text)
                 if let size = Installer.imageSize(r) {
-                    Text(L.f("Downloaded, \\%@", String(describing: ByteText.string(UInt64(size))))).font(.system(size: 13)).foregroundStyle(Desk.good)
+                    Text(L.f("Downloaded, %@", ByteText.string(UInt64(size)))).font(.system(size: 13)).foregroundStyle(Desk.good)
                 } else if let part = Installer.partSize(r) {
-                    Text(L.f("\\%@ of \\%@ downloaded: goes on from there", String(describing: ByteText.string(UInt64(part))), String(describing: ByteText.string(UInt64(r.bytes)))))
+                    Text(L.f("%@ of %@ downloaded: goes on from there", ByteText.string(UInt64(part)), ByteText.string(UInt64(r.bytes))))
                         .font(.system(size: 13)).foregroundStyle(Desk.dim)
                 } else {
-                    Text(L.f("\\%@ download", String(describing: ByteText.string(UInt64(r.bytes))))).font(.system(size: 13)).foregroundStyle(Desk.dim)
+                    Text(L.f("%@ download", ByteText.string(UInt64(r.bytes)))).font(.system(size: 13)).foregroundStyle(Desk.dim)
                 }
                 Text(r.note).font(.system(size: 13)).foregroundStyle(Desk.dim)
             }
@@ -190,11 +190,11 @@ struct InstallView: View {
         let elapsed = Date().timeIntervalSince(stageStarted)
         guard stageSeen == stage, fraction > 0.03, fraction < 1, elapsed > 10 else { return nil }
         let minutes = Int((elapsed / fraction * (1 - fraction) / 60).rounded(.up))
-        return minutes <= 1 ? "About a minute left in this step" : "About \(minutes) minutes left in this step"
+        return minutes <= 1 ? L.s("About a minute left in this step") : L.f("About %lld minutes left in this step", minutes)
     }
 
     @ViewBuilder private var progress: some View {
-        Text(L.f("%@ on this %@. Keep Henge open.", String(describing: release.name), String(describing: Device.name)))
+        Text(L.f("%@ on this %@. Keep Henge open.", release.name, Device.name))
             .font(.system(size: 16))
             .foregroundStyle(Desk.dim)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -203,10 +203,10 @@ struct InstallView: View {
 
         TimelineView(.periodic(from: .now, by: 1)) { _ in
             VStack(alignment: .leading, spacing: 0) {
-                Text(L.f("\\%@%", String(describing: Int(fraction * 100))))
+                Text(L.f("%lld%%", Int(fraction * 100)))
                     .font(.system(size: 66, weight: .bold))
                     .monospacedDigit()
-                Text(timeLeft ?? L.f("Step %@ of %@", String(describing: stage + 1), String(describing: Self.stages.count)))
+                Text(timeLeft ?? L.f("Step %lld of %lld", stage + 1, Self.stages.count))
                     .font(.system(size: 15))
                     .foregroundStyle(Desk.dim)
                     .padding(.top, 2)
