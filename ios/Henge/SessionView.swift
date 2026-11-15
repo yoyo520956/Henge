@@ -165,7 +165,7 @@ struct SessionView: View {
         .statusBarHidden(zoomed || Device.isPad)
         .persistentSystemOverlays(.hidden)
         .sheet(isPresented: $showDetails) { details }
-        .confirmationDialog(L.f("Shut down %@?", String(describing: mac.name), isPresented: $confirmStop, titleVisibility: .visible)) {
+        .confirmationDialog(L.f("Shut down %@?", mac.name), isPresented: $confirmStop, titleVisibility: .visible) {
             Button(L.s("Shut Down"), role: .destructive) { finish() }
         } message: {
             Text(L.s("This turns the Mac off at once. Anything not saved on it is lost."))
@@ -343,7 +343,7 @@ struct SessionView: View {
     }
 
     private func hint(_ strong: String, _ rest: String) -> some View {
-        (Text(strong).foregroundColor(Desk.dim).fontWeight(.semibold) + Text(L.f(" %@", String(describing: rest))).foregroundColor(Desk.faint))
+        (Text(strong).foregroundColor(Desk.dim).fontWeight(.semibold) + Text(L.f(" %@", rest)).foregroundColor(Desk.faint))
             .font(.system(size: 15))
     }
 
@@ -472,10 +472,10 @@ struct SessionView: View {
 
     private var phase: String {
         switch state {
-        case 0: return error == nil ? "Starting…" : "Not started"
-        case 1: return userCode ? "macOS is running" : "Booting"
+        case 0: return error == nil ? L.s("Starting…") : L.s("Not started")
+        case 1: return userCode ? L.s("macOS is running") : L.s("Booting")
         case 3: return L.s("Finishing shutdown…")
-        default: return L.f("Stopped (%@)", String(describing: String(cString: henge_vm_exit_reason())))
+        default: return L.f("Stopped (%@)", String(cString: henge_vm_exit_reason()))
         }
     }
 
@@ -483,15 +483,15 @@ struct SessionView: View {
         NavigationStack {
             List {
                 Section(phase) {
-                    LabeledContent(L.s("CPUs on"), value: "\(cpusOn) of \(cpus)")
+                    LabeledContent(L.s("CPUs on"), value: L.f("%lld of %lld", cpusOn, cpus))
                     LabeledContent(L.s("Temperature"), value: Self.thermalLabel(thermalState))
-                    LabeledContent(L.s("Translated blocks"), value: String(format: "%.1f M/s", blocksPerSecond / 1e6))
-                    LabeledContent(L.s("Network frames"), value: "\(framesOut) out, \(framesIn) in")
-                    LabeledContent(L.s("Up"), value: "\(Int(Date().timeIntervalSince(started))) s")
+                    LabeledContent(L.s("Translated blocks"), value: L.f("%.1f M/s", blocksPerSecond / 1e6))
+                    LabeledContent(L.s("Network frames"), value: L.f("%lld out, %lld in", framesOut, framesIn))
+                    LabeledContent(L.s("Up"), value: L.f("%lld s", Int(Date().timeIntervalSince(started))))
                 }
                 Section(L.s("Display")) {
                     Toggle(L.s("Color matching"), isOn: $matchScreenColors)
-                    LabeledContent(L.s("Brightness"), value: "\(Int(screenBrightness * 100))%")
+                    LabeledContent(L.s("Brightness"), value: L.f("%lld%%", Int(screenBrightness * 100)))
                     Slider(value: $screenBrightness, in: 0.4...1)
                     Text(L.s("Brightness dims only the Mac's screen."))
                         .font(.footnote).foregroundStyle(.secondary)
@@ -504,13 +504,13 @@ struct SessionView: View {
                     }
                     .pickerStyle(.segmented)
                     Toggle(L.s("Sharp edges"), isOn: $sharpCursor)
-                    LabeledContent(L.s("Scroll speed"), value: String(format: "%.1f×", scrollSpeed))
+                    LabeledContent(L.s("Scroll speed"), value: L.f("%.1f×", scrollSpeed))
                     Slider(value: $scrollSpeed, in: 0.1...1.5)
                     Text(L.s("The Mac supplies a small pointer image. Enlarging it can look blurry; 1× is the sharpest on an iPad. Scroll speed changes apply immediately."))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 Section(L.s("Sharing")) {
-                    LabeledContent(L.s("Clipboard and folder"), value: helperRunning ? "On" : "Not set up")
+                    LabeledContent(L.s("Clipboard and folder"), value: helperRunning ? L.s("On") : L.s("Not set up"))
                     if !helperRunning {
                         Button(L.s("Type the Set Up Command")) {
                             showDetails = false
@@ -521,8 +521,8 @@ struct SessionView: View {
                         }
                     }
                     Text(helperRunning
-                         ? "Put files in Files, Henge, Shared to see them in the Henge folder in this Mac's home folder. What you copy on the Mac is copied here too, and the paste button pastes from here into the Mac."
-                         : "Once for each Mac: open Terminal on the Mac, tap this, then press Return. When macOS asks about henge-agent and local networks, choose Allow. It types \(Sharing.setUpCommand) and needs the Mac's keyboard layout to be U.S.")
+                         ? L.s("Put files in Files, Henge, Shared to see them in the Henge folder in this Mac's home folder. What you copy on the Mac is copied here too, and the paste button pastes from here into the Mac.")
+                         : L.f("Once for each Mac: open Terminal on the Mac, tap this, then press Return. When macOS asks about henge-agent and local networks, choose Allow. It types %@ and needs the Mac's keyboard layout to be U.S.", Sharing.setUpCommand))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 Section(L.s("Lighter macOS")) {
@@ -590,6 +590,8 @@ struct SessionView: View {
         HardwareMouse.shared.start()
         let ram = GuestMemory.prepare(mac)
         HengeLog.log("session", "available memory \(henge_available_memory() >> 20) MB")
+        HengeLog.log("session", "profile \(LowMemoryProfile.active.key): code cache \(JITBootstrap.jitBytes >> 20) MB, refresh \(EngineTuning.refreshRate) Hz, guest \(ram) MB, available \(henge_available_memory() >> 20) MB")
+        HengeLog.logFootprint("before-boot")
         guard ram >= 1024 else {
             error = "There is not room for this Mac's memory: it needs a few GB of free storage."
             return
@@ -623,10 +625,12 @@ struct SessionView: View {
             rc = henge_vm_boot(mac.rom.path, mac.disk.path, mac.aux.path, mac.ecid, mac.seed, ram, Int32(cpus), &buffer, buffer.count)
         }
         if rc != 0 {
+            HengeLog.logFootprint("boot-failed")
             error = String(cString: buffer)
             return
         }
         bootRAM = ram
+        HengeLog.logFootprint("after-boot")
         started = Date()
         var used = mac
         used.lastUsed = started
