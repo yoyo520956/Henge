@@ -65,6 +65,18 @@ jobs:
             rustup target add aarch64-apple-ios
           }
 
+- name: Select Xcode 15.4 (avoid Xcode 27 Foundation SDK issues)
+        run: |
+          set -euo pipefail
+          if [ -d "/Applications/Xcode_15.4.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_15.4.app
+          elif [ -d "/Applications/Xcode_15.3.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_15.3.app
+          else
+            echo "Xcode 15.x not found, using default"
+          fi
+          xcodebuild -version
+
       # build_ios.sh builds from third_party/build/<name>; the sources are
       # fetched by fetch_sources.sh, which Husk's own ci_build.sh runs first.
       - name: Fetch Husk's third-party sources
