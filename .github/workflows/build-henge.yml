@@ -67,7 +67,7 @@ jobs:
             rustup target add aarch64-apple-ios
           }
 
-- name: Select Xcode 15.4 (avoid Xcode 27 Foundation SDK issues)
+      - name: Select Xcode 15.4 (avoid Xcode 27 Foundation SDK issues)
         run: |
           set -euo pipefail
           if [ -d "/Applications/Xcode_15.4.app" ]; then
