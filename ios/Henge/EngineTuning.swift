@@ -9,6 +9,12 @@ enum EngineTuning {
     static let wfiSpinKey = "henge.perf.wfiSpin"
     static let fastFlushKey = "henge.perf.fastFlush"
 
+    /// What apply() will actually use, for the log: 30 or 120 if chosen, otherwise 60.
+    static var refreshRate: Int {
+        let v = UserDefaults.standard.integer(forKey: refreshKey)
+        return v == 30 || v == 120 ? v : 60
+    }
+
     static let defaults: [String: String] = [
         // 60, not 120: every frame macOS draws is emulated and replayed, so 120 Hz
         // halves the CPU left for apps for animation few will notice.
