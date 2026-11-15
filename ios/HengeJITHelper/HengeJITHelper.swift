@@ -2,6 +2,9 @@
 import Foundation
 import StikJIT
 
+// DDIPaths is now a top-level public struct in StikJIT v2.0.1
+// (previously it was StikJIT.StikJIT.DDIPaths in v1.9.0)
+
 /// The debugger half of Built-in StikJIT (docs/06-built-in-jit.md).
 ///
 /// A process cannot synchronously debug itself, so Henge starts this extension,
