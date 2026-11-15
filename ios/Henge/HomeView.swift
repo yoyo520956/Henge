@@ -27,10 +27,10 @@ struct HomeView: View {
                     notices
                     if let mac {
                         MacHero(mac: mac, jitReady: jitReady, start: { running = mac }, turnOnJIT: { jit.enable() },
-                                jitNote: jitReady ? nil : (JITBootstrap.lastFailure ?? jit.automaticDescription))
+                                jitNote: jitReady ? nil : (JITBootstrap.lastFailure.map(L.s) ?? jit.automaticDescription))
                         HStack(spacing: 10) {
-                            FactTile(title: "Disk", value: ByteText.string(UInt64(max(mac.bytesUsed, 0))))
-                            FactTile(title: "Last used", value: mac.lastUsedText)
+                            FactTile(title: L.s("Disk"), value: ByteText.string(UInt64(max(mac.bytesUsed, 0))))
+                            FactTile(title: L.s("Last used"), value: mac.lastUsedText)
                         }
                         others(besides: mac)
                     } else {
@@ -75,12 +75,12 @@ struct HomeView: View {
         }
         if installer.busy {
             Button { tab = .install } label: {
-                NoticeRow(symbol: "arrow.down.circle.fill", text: "Installing \(installer.machineName)…", trailing: "See")
+                NoticeRow(symbol: "arrow.down.circle.fill", text: L.f("Installing %@…", installer.machineName), trailing: L.s("See"))
             }
         }
         if let name = machines.importing {
             NoticeRow(symbol: "square.and.arrow.down.fill",
-                      text: machines.unpacked > 0 ? String(format: "Unpacking %@'s disk… %.0f%%", name, machines.unpacked * 100) : "Bringing in \(name)…")
+                      text: machines.unpacked > 0 ? L.f("Unpacking %@'s disk… %.0f%%", name, machines.unpacked * 100) : L.f("Bringing in %@…", name))
         }
         if let error = machines.lastError {
             NoticeRow(symbol: "exclamationmark.triangle.fill", text: error, tint: Desk.bad)
@@ -96,7 +96,7 @@ struct HomeView: View {
                 .frame(height: 190)
                 .background(Desk.raised.opacity(0.5), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
             Text(L.s("No Mac yet")).font(.system(size: 24, weight: .bold))
-            Text(L.f("Install macOS on this %@, or bring in a Mac made on a computer.", String(describing: Device.name)))
+            Text(L.f("Install macOS on this %@, or bring in a Mac made on a computer.", Device.name))
                 .font(.system(size: 15)).foregroundStyle(Desk.dim).multilineTextAlignment(.center)
             Button(L.s("Install macOS")) { tab = .install }.buttonStyle(DeskButtonStyle())
             Button(L.s("Bring in a Mac")) { picking = true }
@@ -148,7 +148,7 @@ extension VirtualMac {
     var summary: String {
         var parts: [String] = []
         if let osName { parts.append(osName) }
-        parts.append("\(ramMB / 1024) GB")
+        parts.append(L.f("%lld GB", ramMB / 1024))
         return parts.joined(separator: " · ")
     }
 }
@@ -180,7 +180,7 @@ private struct MacHero: View {
                     }
                     .padding(.top, 15)
                     .padding(.horizontal, 5)
-                    Text(L.f("%@ · %@ CPUs", String(describing: mac.summary), String(describing: cpus)))
+                    Text(L.f("%@ · %lld CPUs", mac.summary, cpus))
                         .font(.system(size: 15))
                         .foregroundStyle(Desk.dim)
                         .frame(maxWidth: .infinity, alignment: .leading)
