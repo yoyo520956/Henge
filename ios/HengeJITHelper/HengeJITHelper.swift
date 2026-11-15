@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
 import StikJIT
+@_implementationOnly import idevice
 
-// DDIPaths is now a top-level public struct in StikJIT v2.0.1
-// (previously it was StikJIT.StikJIT.DDIPaths in v1.9.0)
+// DDIPaths is a top-level public struct in StikJIT v2.0.1, defined in the idevice module
+// It's not StikJIT.StikJIT.DDIPaths anymore
 
 /// The debugger half of Built-in StikJIT (docs/06-built-in-jit.md).
 ///
