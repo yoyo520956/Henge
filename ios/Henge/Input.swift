@@ -201,11 +201,11 @@ struct ModifierRow: View {
 
     var body: some View {
         HStack(spacing: 5) {
-            HeldKey(label: "esc", code: Keys.escape)
-            HeldKey(label: "tab", code: Keys.tab)
-            modifier("⌃", Keys.control, "Control")
-            modifier("⌥", Keys.option, "Option")
-            modifier("⌘", Keys.command, "Command")
+            HeldKey(label: L.s("esc"), code: Keys.escape)
+            HeldKey(label: L.s("tab"), code: Keys.tab)
+            modifier("⌃", Keys.control, L.s("Control"))
+            modifier("⌥", Keys.option, L.s("Option"))
+            modifier("⌘", Keys.command, L.s("Command"))
             HeldKey(label: "←", code: Keys.left)
             HeldKey(label: "↑", code: Keys.up)
             HeldKey(label: "↓", code: Keys.down)
