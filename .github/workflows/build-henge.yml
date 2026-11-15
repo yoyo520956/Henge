@@ -19,11 +19,6 @@ on:
   push:
     branches: [main]
 
-# Avoid multiple queued builds on the same branch.
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 env:
   HUSK: ${{ github.workspace }}/Husk
   # The Makefile takes its slirp headers from IOS_DEPS, not HUSK:
