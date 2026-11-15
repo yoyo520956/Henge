@@ -112,9 +112,20 @@ jobs:
         working-directory: Henge
         run: make ios-lib
 
-      - name: Package Henge.ipa
+      - name: Package Henge.ipa (with Xcode 15.x)
         working-directory: Henge
-        run: zsh ios/scripts/package_ipa.sh
+        run: |
+          set -euo pipefail
+          # Ensure Xcode 15.x is selected for this shell and all subprocesses
+          for ver in 15.4 15.3 15.2 15.1 15.0; do
+            if [ -d "/Applications/Xcode_${ver}.app" ]; then
+              sudo xcode-select -s "/Applications/Xcode_${ver}.app"
+              echo "Selected Xcode ${ver}"
+              break
+            fi
+          done
+          echo "Using Xcode: $(xcodebuild -version | head -1)"
+          zsh ios/scripts/package_ipa.sh
 
       - name: Upload Henge.ipa
         uses: actions/upload-artifact@v4
@@ -123,9 +134,18 @@ jobs:
           path: /Users/runner/Desktop/Henge.ipa
           if-no-files-found: error
 
-      - name: Package Henge.tipa
+      - name: Package Henge.tipa (with Xcode 15.x)
         working-directory: Henge
-        run: zsh ios/scripts/package_ipa.sh --trollstore
+        run: |
+          set -euo pipefail
+          for ver in 15.4 15.3 15.2 15.1 15.0; do
+            if [ -d "/Applications/Xcode_${ver}.app" ]; then
+              sudo xcode-select -s "/Applications/Xcode_${ver}.app"
+              echo "Selected Xcode ${ver}"
+              break
+            fi
+          done
+          zsh ios/scripts/package_ipa.sh --trollstore
 
       - name: Upload Henge.tipa
         uses: actions/upload-artifact@v4
