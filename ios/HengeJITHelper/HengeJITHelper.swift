@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
-import StikJIT
-@_implementationOnly import idevice
+import StikJITKit
 
-// DDIPaths is a top-level public struct in StikJIT v2.0.1, defined in the idevice module
-// It's not StikJIT.StikJIT.DDIPaths anymore
+// The StikJIT framework is rebuilt from source under Xcode 16.4 in CI, and its
+// Swift module is named StikJITKit: the module and the public enum inside it
+// are both called StikJIT upstream, which makes Xcode 16.4 emit a .swiftinterface
+// where `StikJIT.DDIPaths` is ambiguous (the prefix resolves to the enum instead
+// of the module) and Swift 6.0 then fails to parse its own interface. Renaming the
+// module removes the ambiguity; the framework binary is still StikJIT.framework.
 
 /// The debugger half of Built-in StikJIT (docs/06-built-in-jit.md).
 ///
