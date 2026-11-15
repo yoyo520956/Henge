@@ -68,19 +68,15 @@ enum JITNetworkAdvice {
         guard let problem = JITConnectionProblem(helperMessage: helperMessage) else { return nil }
         if problem == .pairing {
             return JITAdvice(
-                message: "This device closed the connection, which usually means it no longer accepts "
-                       + "Henge's pairing. Pair again, and check that LocalDevVPN is connected.",
+                message: L.s("This device closed the connection, which usually means it no longer accepts Henge's pairing. Pair again, and check that LocalDevVPN is connected."),
                 actions: [.pairAgain, .connectLocalDevVPN])
         }
         guard situation == .cellularOnly else {
-            return JITAdvice(message: "Henge couldn't reach this device. Connect LocalDevVPN, then try again.",
+            return JITAdvice(message: L.s("Henge couldn't reach this device. Connect LocalDevVPN, then try again."),
                              actions: [.connectLocalDevVPN])
         }
         return JITAdvice(
-            message: "LocalDevVPN can show Connected while iOS still sends Henge's connection over cellular. "
-                   + "Turn Cellular Data off in Control Center, wait 2 seconds, then turn it back on. "
-                   + "Or join any Wi-Fi once; a hotspot works. "
-                   + "Keep LocalDevVPN connected, turn off other VPNs such as Tailscale, then try again.",
+            message: L.s("LocalDevVPN can show Connected while iOS still sends Henge's connection over cellular. Turn Cellular Data off in Control Center, wait 2 seconds, then turn it back on. Or join any Wi-Fi once; a hotspot works. Keep LocalDevVPN connected, turn off other VPNs such as Tailscale, then try again."),
             actions: [.connectLocalDevVPN])
     }
 }
@@ -100,7 +96,7 @@ enum JITRetryPolicy {
 
     /// Shown while waiting to try attempt `nextAttempt` (the first retry is attempt 2).
     static func statusText(nextAttempt: Int) -> String {
-        "Retrying over LocalDevVPN (\(nextAttempt) of \(maxAttempts))…"
+        L.f("Retrying over LocalDevVPN (%lld of %lld)…", nextAttempt, maxAttempts)
     }
 
     static func decision(situation: NetworkSituation, problem: JITConnectionProblem, attempt: Int) -> JITRetryDecision {
