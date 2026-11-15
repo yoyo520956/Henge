@@ -19,7 +19,7 @@ enum BootROM {
         case download(String), damaged
         var errorDescription: String? {
             switch self {
-            case .download(let why): return L.f("Henge couldn't get the Mac's boot ROM from Apple (%@). Check the connection and try again.", String(describing: why))
+            case .download(let why): return L.f("Henge couldn't get the Mac's boot ROM from Apple (%@). Check the connection and try again.", why)
             case .damaged: return L.s("The Mac's boot ROM from Apple wasn't what Henge expected, so it wasn't used. Check the connection and try again, or look for an update to Henge.")
             }
         }
