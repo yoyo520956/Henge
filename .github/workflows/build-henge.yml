@@ -19,6 +19,11 @@ on:
   push:
     branches: [main]
 
+# Avoid multiple queued builds on the same branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   HUSK: ${{ github.workspace }}/Husk
   # The Makefile takes its slirp headers from IOS_DEPS, not HUSK:
@@ -28,9 +33,9 @@ env:
 
 jobs:
   build:
-    # macOS latest stable (Xcode 15.x) is free on public repos and supports iOS 17+.
-    runs-on: macos-latest
-    timeout-minutes: 120
+    # macOS 13 (Xcode 15.2) is stable, supports iOS 17+, and is free on public repos.
+    runs-on: macos-13
+    timeout-minutes: 180
 
     steps:
       - name: Check out Henge (this fork)
@@ -66,20 +71,18 @@ jobs:
             rustup target add aarch64-apple-ios
           }
 
-      - name: Select Xcode 15.4 (avoid Xcode 27 Foundation SDK issues)
+      - name: Select Xcode 15.x (avoid Xcode 26+ Foundation SDK issues)
         run: |
           set -euo pipefail
-          if [ -d "/Applications/Xcode_15.4.app" ]; then
-            sudo xcode-select -s /Applications/Xcode_15.4.app
-          elif [ -d "/Applications/Xcode_15.3.app" ]; then
-            sudo xcode-select -s /Applications/Xcode_15.3.app
-          else
-            echo "Xcode 15.x not found, using default"
-          fi
+          for ver in 15.4 15.3 15.2 15.1 15.0; do
+            if [ -d "/Applications/Xcode_${ver}.app" ]; then
+              sudo xcode-select -s "/Applications/Xcode_${ver}.app"
+              echo "Selected Xcode ${ver}"
+              break
+            fi
+          done
           xcodebuild -version
 
-      # build_ios.sh builds from third_party/build/<name>; the sources are
-      # fetched by fetch_sources.sh, which Husk's own ci_build.sh runs first.
       - name: Fetch Husk's third-party sources
         working-directory: Husk
         run: bash scripts/fetch_sources.sh
