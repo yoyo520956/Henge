@@ -21,7 +21,7 @@ struct StoppedMacView: View {
         switch outcome {
         case Int32(HENGE_VM_OUTCOME_SHUTDOWN.rawValue), Int32(HENGE_VM_OUTCOME_HOST_STOP.rawValue): return next
         case Int32(HENGE_VM_OUTCOME_RESTART.rawValue): return L.s("The Mac is ready to start again.")
-        default: return L.f("The Mac stopped: %@. %@", String(describing: reason), String(describing: next))
+        default: return L.f("The Mac stopped: %@. %@", reason, next)
         }
     }
 
