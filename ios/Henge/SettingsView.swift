@@ -19,6 +19,8 @@ struct SettingsView: View {
     @AppStorage(DeskAppearance.key) private var appearance = DeskAppearance.system
     @AppStorage(InstantResume.key) private var instantResume = false
     @AppStorage(MacAppsFeature.key) private var macApps = false
+    /// The heartbeat's last round, shown in the Heartbeat section.
+    @ObservedObject private var heartbeat = Heartbeat.observer
 
     /// The second footer paragraph: how you click, given the selected input mode.
     private var inputDescription: String {
@@ -74,6 +76,22 @@ struct SettingsView: View {
                     Text(LowMemoryProfile.active == .low
                          ? L.s("The device is short of memory, or this install's limit is under 3 GB: Henge picks a 512 MB code cache and a 30 Hz display by default, and caps the installer's temporary Mac at 2 GB. A 2 GB Mac is the most this device is likely to keep up. Choose a larger cache only if the Mac closes Henge mid-setup.")
                          : L.s("Auto picks the code cache and refresh rate the device has room for. Changes apply the next time a Mac starts."))
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                .listRowBackground(Desk.card)
+                Section(L.s("Heartbeat")) {
+                    LabeledContent(L.s("Check interval"), value: L.f("%lld minutes", Int(Heartbeat.interval / 60)))
+                    LabeledContent(L.s("Checks so far"), value: L.f("%lld", Heartbeat.roundCount))
+                    if let round = heartbeat.lastRound {
+                        LabeledContent(L.s("Henge's memory"), value: L.f("%lld MB", round.memoryMB))
+                        LabeledContent(L.s("Mac's memory"), value: L.f("%lld MB", round.guestRAMMB))
+                        LabeledContent(L.s("Last check"),
+                                       value: round.finishedAt.formatted(date: .omitted, time: .standard))
+                        if !round.note.isEmpty {
+                            Text(round.note).font(.footnote).foregroundStyle(.secondary)
+                        }
+                    }
+                    Text(L.s("Every few minutes Henge checks its own memory, the running Mac's memory and its log, and trims the log when it grows too large. This keeps iOS from closing Henge on a phone with little memory. iOS decides when a backgrounded app may run, so the checks are exact while Henge is open and best-effort when it is not."))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 .listRowBackground(Desk.card)
