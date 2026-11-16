@@ -20,6 +20,12 @@ xcodebuild -project Henge.xcodeproj -scheme Henge -configuration Release -sdk ip
     -derivedDataPath "$DD" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build > "$DD.buildlog" 2>&1 || {
     # Never package what an older build left behind.
     grep -E "error:|BUILD" "$DD.buildlog" | sort -u
+    # The one-line grep loses the include chain. Print the context around each
+    # failure so the CI log says which source file and which header pulled in
+    # the broken SDK header, plus the last compile commands before it.
+    grep -n -B 30 -A 3 -E "(fatal )?error:" "$DD.buildlog" | head -400 || true
+    echo "==> last compile commands before failure:" >&2
+    grep -nE "CompileC |CompileSwift |ProcessPCH|ClangModule" "$DD.buildlog" | tail -12 >&2 || true
     echo "==> the build failed; nothing packaged" >&2
     exit 1
 }
