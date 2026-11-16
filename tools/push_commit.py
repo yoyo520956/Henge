@@ -49,12 +49,14 @@ def remote_tree():
 
 
 def local_tree():
-    out = subprocess.run(["git", "ls-tree", "-r", "HEAD"],
-                         capture_output=True, text=True, check=True).stdout
+    out = subprocess.run(["git", "-c", "core.quotePath=false", "ls-tree", "-r", "-z", "HEAD"],
+                         capture_output=True, check=True).stdout
     blobs = {}
-    for line in out.splitlines():
-        meta, _, path = line.partition("\t")
-        blobs[path] = meta.split()[2]
+    for record in out.split(b"\0"):
+        if not record:
+            continue
+        meta, _, path = record.partition(b"\t")
+        blobs[path.decode("utf-8")] = meta.split()[2].decode()
     return blobs
 
 

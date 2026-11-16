@@ -20,16 +20,6 @@ settings:
     SWIFT_OPTIMIZATION_LEVEL: "-O"
     GCC_OPTIMIZATION_LEVEL: "2"
     CLANG_C_LANGUAGE_STANDARD: c11
-    # Xcode 16.4's iOS 18.5 SDK lists Foundation/NSURLHandle.h in
-    # Foundation.framework's modulemap, but that header is macOS-only and is
-    # absent from the iOS SDK. With Clang modules enabled (xcodebuild's
-    # default) the umbrella import fails with:
-    #   Foundation.framework/Headers/NSURL.h:12:9: 'Foundation/NSURLHandle.h' file not found
-    # The translation layer builds the same Foundation imports with plain
-    # clang (no modules) during `make ios-lib` and succeeds, so keep the app
-    # target on that path too. Swift's `import Foundation` still resolves via
-    # the framework's swiftmodule and is unaffected.
-    CLANG_ENABLE_MODULES: "NO"
 
 targets:
   Henge:
