@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import BackgroundTasks
+import Combine
+import Darwin
 import Foundation
 import UIKit
 
@@ -239,7 +241,7 @@ enum Heartbeat {
 
         HengeLog.logFootprint("heartbeat")
         round.memoryMB = currentFootprintMB()
-        round.vmState = henge_vm_state()
+        round.vmState = Int(henge_vm_state())
         round.guestRAMMB = guestRAMMB()
 
         round.logBytes = logFileSize()
