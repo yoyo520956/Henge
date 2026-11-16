@@ -126,10 +126,16 @@ targets:
       - name: Embed StikJIT
         # As in Husk: the helper links StikJIT; it lives in the app's Frameworks
         # with a minimal Info.plist (installd refuses one without), signed here.
+        #
+        # The framework is called StikJITKit because its Swift module is named
+        # after the framework, and upstream calls both the module and the
+        # public enum inside it StikJIT. Xcode 16.4 then writes an ambiguous
+        # `StikJIT.DDIPaths` into the .swiftinterface and Swift 6.0 cannot
+        # parse its own interface. See ci/build-stikjit.sh.
         script: |
           set -e
-          SRC="$SRCROOT/deps/StikJIT.xcframework/ios-arm64/StikJIT.framework"
-          DST="$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/StikJIT.framework"
+          SRC="$SRCROOT/deps/StikJIT.xcframework/ios-arm64/StikJITKit.framework"
+          DST="$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/StikJITKit.framework"
           rm -rf "$DST"
           mkdir -p "$(dirname "$DST")"
           ditto "$SRC" "$DST"
@@ -138,12 +144,12 @@ targets:
           if [ ! -f "$PLIST" ]; then
             plutil -create xml1 "$PLIST"
             plutil -insert CFBundleIdentifier -string "$PRODUCT_BUNDLE_IDENTIFIER.StikJIT" "$PLIST"
-            plutil -insert CFBundleExecutable -string StikJIT "$PLIST"
-            plutil -insert CFBundleName -string StikJIT "$PLIST"
+            plutil -insert CFBundleExecutable -string StikJITKit "$PLIST"
+            plutil -insert CFBundleName -string StikJITKit "$PLIST"
             plutil -insert CFBundlePackageType -string FMWK "$PLIST"
             plutil -insert CFBundleInfoDictionaryVersion -string 6.0 "$PLIST"
-            plutil -insert CFBundleShortVersionString -string 1.9.0 "$PLIST"
-            plutil -insert CFBundleVersion -string 1.9.0 "$PLIST"
+            plutil -insert CFBundleShortVersionString -string 2.0.1 "$PLIST"
+            plutil -insert CFBundleVersion -string 2.0.1 "$PLIST"
             plutil -insert MinimumOSVersion -string 17.4 "$PLIST"
             plutil -insert CFBundleSupportedPlatforms -array "$PLIST"
             plutil -insert CFBundleSupportedPlatforms.0 -string iPhoneOS "$PLIST"
