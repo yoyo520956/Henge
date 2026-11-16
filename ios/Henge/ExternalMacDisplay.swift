@@ -28,19 +28,14 @@ struct ExternalMacDisplay: View {
 struct ExternalMacDisplayModifier: ViewModifier {
     let presentation: MacPresentation
 
-    @ViewBuilder
     func body(content: Content) -> some View {
-        let session = content
+        // sceneAccessory and ExternalNonInteractiveAccessory ship only in the
+        // iOS 27 SDK. This build uses Xcode 16.4 / iOS 18.5 SDK, where those
+        // symbols do not exist; #available guards runtime, not symbol
+        // availability, so that branch cannot compile here. The legacy
+        // external-display scene delegate covers iOS 17-26.
+        content
             .onAppear { LegacyExternalDisplay.shared.begin(presentation) }
             .onDisappear { LegacyExternalDisplay.shared.end(presentation) }
-        if #available(iOS 27.0, *) { // the compiler requires this to call the iOS 27 sceneAccessory API
-            session.sceneAccessory {
-                ExternalNonInteractiveAccessory {
-                    ExternalMacDisplay(presentation: presentation)
-                }
-            }
-        } else {
-            session
-        }
     }
 }

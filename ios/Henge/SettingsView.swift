@@ -68,7 +68,7 @@ struct SettingsView: View {
                 .listRowBackground(Desk.card)
                 Section(L.s("Memory profile")) {
                     Picker(L.s("Profile"), selection: $memoryProfile) {
-                        ForEach([LowMemoryProfile.Mode.auto, .low, .balanced, .performance]) { Text(L.s($0.key)).tag($0.rawValue) }
+                        ForEach([LowMemoryProfile.Mode.auto, .low, .balanced, .performance], id: \.self) { Text(L.s($0.key)).tag($0.rawValue) }
                     }
                     .pickerStyle(.menu)
                     LabeledContent(L.s("Active profile"), value: L.s(LowMemoryProfile.active.key))

@@ -9,7 +9,7 @@ enum L {
         NSLocalizedString(key, comment: comment)
     }
 
-    static func f(_ key: String, _ args: CVarArg..., _ comment: String = "") -> String {
+    static func f(_ key: String, _ args: CVarArg..., comment: String = "") -> String {
         String(format: NSLocalizedString(key, comment: comment), arguments: args)
     }
 }

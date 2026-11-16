@@ -49,7 +49,6 @@ enum Heartbeat {
     /// Everything the heartbeat knows, readable from the UI and the log.
     /// The heartbeat is an observable object so the settings page can show the
     /// last round without polling it.
-    @MainActor
     final class HeartbeatObserver: ObservableObject {
         @Published var lastRound: Round?
     }

@@ -125,7 +125,7 @@ struct InstallView: View {
         .disabled(!jitReady || Device.chipTooOld)
         .padding(.top, 20)
         Text(Device.chipTooOld ? Device.chipTooOldText : jitReady ? L.f("Keep Henge open and the %@ plugged in. Needs about %@ free.", Device.name, ByteText.string(UInt64(Installer.spaceNeeded(release))))
-                                : (JITBootstrap.lastFailure.map(L.s) ?? L.f("Turn on JIT first. %@", jit.automaticDescription)))
+                                : (JITBootstrap.lastFailure.map { L.s($0) } ?? L.f("Turn on JIT first. %@", jit.automaticDescription)))
             .font(.system(size: 13))
             .foregroundStyle(Desk.dim)
             .multilineTextAlignment(.center)
