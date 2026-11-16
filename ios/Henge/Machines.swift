@@ -18,8 +18,14 @@ struct VirtualMac: Identifiable, Codable, Hashable {
     var screenHeight: Int?
     /// m4 fork: the iPad's own panel at Retina density. On by default on iPad, for Macs that never chose.
     var retina: Bool?
-    var isRetina: Bool { Device.isPad && (retina ?? false) }
-    var screen: (width: Int, height: Int) { isRetina ? Device.retinaScreen : (screenWidth ?? 1920, screenHeight ?? 1080) }
+    /// Whether the Mac's screen is drawn at Retina density. A phone always is: that is what
+    /// keeps its menus, Dock and fonts the size they are on the phone itself (see
+    /// Device.phoneScreen). An iPad still chooses, since it has the room either way.
+    var isRetina: Bool { Device.isPad ? (retina ?? false) : true }
+    var screen: (width: Int, height: Int) {
+        Device.isPad ? (isRetina ? Device.retinaScreen : (screenWidth ?? 1920, screenHeight ?? 1080))
+                     : Device.phoneScreen
+    }
     var aspect: CGFloat { CGFloat(screen.width) / CGFloat(screen.height) }
 
     var directory: URL { Machines.directory(for: id) }
@@ -40,8 +46,15 @@ enum GuestMemory {
             .volumeAvailableCapacityForImportantUsage ?? 0
         let room = free > 0 ? UInt64(max(free - (2 << 30), 0)) >> 20 : UInt64.max
         let reach = henge_largest_mapping_mb()
-        let profileCap = LowMemoryProfile.active == .low ? 2048 : Int.max
-        let ram = min(UInt64(mac.ramMB), room, UInt64(profileCap), reach > 512 ? reach - 512 : 0) / 512 * 512
+        // The plan's number is the target, not the Mac's own setting: the plan
+        // is what this device can actually run, and a Mac installed before the
+        // plan changed keeps its own number otherwise. The caps only trim it
+        // when the device cannot hold it. A guest backed by a file does not
+        // count against iOS's limit for the app, so this is not simply the
+        // phone's spare RAM.
+        let wanted = max(UInt64(mac.ramMB), UInt64(PerformancePlan.guestRAMMB))
+        let profileCap = PerformancePlan.guestRAMMB
+        let ram = min(wanted, room, UInt64(profileCap), reach > 512 ? reach - 512 : 0) / 512 * 512
         if ram < UInt64(mac.ramMB) {
             HengeLog.log("session", "guest RAM capped to \(ram) MB (asked \(mac.ramMB), profile cap \(profileCap), disk room \(room), largest mapping \(reach))")
         } else {

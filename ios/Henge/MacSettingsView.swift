@@ -7,7 +7,6 @@ struct MacSettingsView: View {
     @State private var mac: VirtualMac
     @State private var confirmDelete = false
     @State private var movingExport = false
-    @AppStorage("henge.cpus") private var cpus = 4
 
     init(mac: VirtualMac) { _mac = State(initialValue: mac) }
 
@@ -41,18 +40,32 @@ struct MacSettingsView: View {
                 .deskCard()
 
                 DeskHeading(L.s("Processors"))
-                Stepper(value: $cpus, in: 1...6) {
-                    HStack {
-                        Text(L.s("CPUs")).font(.system(size: 16))
-                        Spacer()
-                        Text(L.f("%lld", cpus)).font(.system(size: 16, weight: .semibold))
-                    }
+                // Fixed by the device, not adjustable: see PerformancePlan.
+                HStack {
+                    Text(L.s("CPUs")).font(.system(size: 16))
+                    Spacer()
+                    Text(L.f("%lld", PerformancePlan.cpuCount)).font(.system(size: 16, weight: .semibold))
                 }
                 .padding(.horizontal, 17)
-                .padding(.vertical, 10)
+                .padding(.vertical, 14)
                 .deskCard()
 
-                if Device.fittingScreen.height != 1080 {
+                if !Device.isPad {
+                    DeskHeading(L.s("Screen"))
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text(L.s("Screen")).font(.system(size: 16))
+                            Spacer()
+                            Text(L.f("%lld × %lld", mac.screen.width, mac.screen.height)).font(.system(size: 16, weight: .semibold))
+                        }
+                        Text(L.s("Sized for this iPhone: the Mac draws at the size of its own screen."))
+                            .font(.system(size: 13)).foregroundStyle(Desk.dim)
+                    }
+                    .padding(17)
+                    .deskCard()
+                }
+
+                if Device.isPad, Device.fittingScreen.height != 1080 {
                     DeskHeading(L.s("Screen"))
                     VStack(alignment: .leading, spacing: 12) {
                         Picker(L.s("Screen"), selection: Binding(get: {

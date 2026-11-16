@@ -29,9 +29,26 @@ enum Device {
         let n = UIScreen.main.nativeBounds.size
         return (Int(max(n.width, n.height)) / 8 * 8, Int(min(n.width, n.height)) / 8 * 8)
     }
-    static var retinaMM: (width: Int, height: Int) {
-        let s = retinaScreen
-        return (Int((Double(s.width) / 264 * 25.4).rounded()), Int((Double(s.height) / 264 * 25.4).rounded()))
+    /// The panel's own size in mm, at 264 ppi (the M-series iPad's panel, and the density
+    /// macOS calls Retina): it sees a screen that dense, at the size reported, and so draws
+    /// at half the pixels. The width and height are the framebuffer actually in use, not the
+    /// panel's own, so the density still comes out right where the two differ.
+    static func retinaMM(width: Int, height: Int) -> (width: Int, height: Int) {
+        (Int((Double(width) / 264 * 25.4).rounded()), Int((Double(height) / 264 * 25.4).rounded()))
+    }
+
+    /// The Mac's screen on a phone: the panel's own pixels at the panel's own shape. macOS
+    /// sees the density above and draws at half this — the phone's own point size — so a
+    /// menu bar, a Dock icon and a font arrive the size they are on the iPhone itself,
+    /// instead of a 1920-point Mac shrunk to a third of it to fit a 375-point screen. The
+    /// width is capped because a wide panel would otherwise hand WindowServer more pixels
+    /// than a phone can redraw smoothly; the height follows the shape, so it still fills it.
+    static var phoneScreen: (width: Int, height: Int) {
+        let n = UIScreen.main.nativeBounds.size
+        let wide = max(n.width, n.height), tall = min(n.width, n.height)
+        let w = min(Int(wide), 1600)
+        let h = Int(Double(w) * Double(tall) / Double(wide))
+        return (w / 8 * 8, max(360, h / 8 * 8))
     }
 
     /// Physical RAM, in MB, as iOS reports it.

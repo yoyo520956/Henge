@@ -21,7 +21,10 @@ struct SessionView: View {
     @State private var started = Date()
     @State private var thermalState = ProcessInfo.processInfo.thermalState
     @State private var bootRAM: UInt64 = 0 /* what the Mac was started with, which a save is for */
-    @AppStorage("henge.cpus") private var cpus = 4
+    /// The vCPU count is fixed by the device (PerformancePlan): the emulated CPUs are
+    /// host threads, and on a phone that is short of both memory and cores, extra
+    /// ones cost the display and the JIT more than they give the Mac.
+    private var cpus: Int { PerformancePlan.cpuCount }
     @AppStorage("henge.matchScreenColors") private var matchScreenColors = true
     @AppStorage("henge.display.brightness") private var screenBrightness = 1.0
     @AppStorage("henge.cursor.scale") private var cursorScale = Device.isPad ? 1 : 3
@@ -602,7 +605,8 @@ struct SessionView: View {
         EngineTuning.apply()
         henge_vm_set_display(UInt32(mac.screen.width), UInt32(mac.screen.height))
         if mac.isRetina {
-            henge_vm_set_display_mm(UInt32(Device.retinaMM.width), UInt32(Device.retinaMM.height))
+            let mm = Device.retinaMM(width: mac.screen.width, height: mac.screen.height)
+            henge_vm_set_display_mm(UInt32(mm.width), UInt32(mm.height))
         } else {
             henge_vm_set_display_mm(0, 0)
         }

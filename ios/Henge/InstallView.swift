@@ -8,14 +8,12 @@ struct InstallView: View {
     @StateObject private var display = DisplayRouter()
     @State private var release = MacOSRelease.all.first(where: Installer.haveImage) ?? MacOSRelease.recommended
     @State private var name = "Mac"
-    @State private var ramGB = Device.suggestedRAMGB
     @State private var deleteAfter = false
     @State private var refresh = 0 // redraws the list when a download is deleted
     @State private var details = false
     @State private var stageStarted = Date()
     @State private var stageSeen = -1
     @State private var confirmDeleteDownload: MacOSRelease?
-    @AppStorage("henge.cpus") private var cpus = 4
 
     var body: some View {
         NavigationStack {
@@ -93,16 +91,17 @@ struct InstallView: View {
                 .padding(.horizontal, 17)
                 .padding(.vertical, 14)
             Rectangle().fill(Desk.hairline).frame(height: 0.5)
-            Stepper(value: $ramGB, in: Device.memoryChoices) {
-                HStack {
-                    Text(L.s("Memory")).font(.system(size: 16))
-                    Spacer()
-                    Text(L.f("%lld GB", ramGB)).font(.system(size: 16, weight: .semibold))
-                }
+            // Fixed by the device, not adjustable: see PerformancePlan. A Mac
+            // under 4 GB swaps on every redraw, so the plan gives one that fits
+            // the phone instead of one the user has to guess at.
+            HStack {
+                Text(L.s("Memory")).font(.system(size: 16))
+                Spacer()
+                Text(L.f("%lld GB", PerformancePlan.guestRAMMB / 1024)).font(.system(size: 16, weight: .semibold))
             }
             .padding(.horizontal, 17)
-            .padding(.vertical, 10)
-            if let note = Device.memoryNote(ramGB) {
+            .padding(.vertical, 14)
+            if let note = Device.memoryNote(PerformancePlan.guestRAMMB / 1024) {
                 Text(note)
                     .font(.system(size: 13))
                     .foregroundStyle(Desk.dim)
@@ -119,7 +118,7 @@ struct InstallView: View {
         .deskCard()
 
         Button(Installer.haveImage(release) ? L.s("Install") : L.s("Download and Install")) {
-            installer.start(release, name: name.isEmpty ? "Mac" : name, ramMB: ramGB * 1024, cpus: cpus, keepImage: !deleteAfter)
+            installer.start(release, name: name.isEmpty ? "Mac" : name, ramMB: PerformancePlan.guestRAMMB, cpus: PerformancePlan.cpuCount, keepImage: !deleteAfter)
         }
         .buttonStyle(DeskButtonStyle(enabled: jitReady && !Device.chipTooOld))
         .disabled(!jitReady || Device.chipTooOld)

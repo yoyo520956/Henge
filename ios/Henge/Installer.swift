@@ -223,7 +223,7 @@ final class Installer: NSObject, ObservableObject {
         // caches the ~15 GB it writes, so it fills all the memory it is given, and 10 GB of a 12 GB iPhone's RAM in use
         // (it is outside Henge's footprint, so iOS does not stop it) stalls the whole phone two thirds of the way through.
         var restoring = mac
-        restoring.ramMB = min(max(mac.ramMB, 2048), LowMemoryProfile.restoreCapMB)
+        restoring.ramMB = min(max(mac.ramMB, 2048), PerformancePlan.restoreCapMB)
         let ram = GuestMemory.prepare(restoring)
         guard ram >= 2048 else { throw message(L.s("Installing needs a few more GB of free storage for the Mac's memory.")) }
         setenv("HV_WRITE_CACHE", "0", 1) // the ~15 GB the restore writes goes straight to storage (host/disk.c); this process runs no other Mac

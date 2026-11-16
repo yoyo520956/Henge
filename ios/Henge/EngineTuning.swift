@@ -31,6 +31,16 @@ enum EngineTuning {
         if d.bool(forKey: superblocksKey) { env["HV_SUPERBLOCKS"] = "1" } else { unsetenv("HV_SUPERBLOCKS") }
         if d.bool(forKey: wfiSpinKey) { env["HV_WFI_SPIN"] = "50" }
         if d.object(forKey: fastFlushKey) as? Bool == false { env["HV_FLUSH"] = "0" }
+        // The plan has the last word on the two settings that decide whether a Mac
+        // feels smooth on a phone: the refresh rate macOS draws at, and whether the
+        // idle vCPUs spin instead of sleeping. Spinning every idle core is what
+        // makes a phone hot and its display stutter.
+        env["HV_HZ"] = String(PerformancePlan.refreshRate)
+        if PerformancePlan.spinIdleCPUs {
+            env["HV_WFI_SPIN"] = "50"
+        } else {
+            env["HV_WFI_SPIN"] = "0"
+        }
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         // GPU command trace: on while Documents/trace-on exists (it is checked every frame, so it can be toggled live).
         env["HV_PVG_TRACE_FILE"] = docs.appendingPathComponent("trace-on").path

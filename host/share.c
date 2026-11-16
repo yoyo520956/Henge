@@ -621,6 +621,16 @@ static const char lighten_script[] =
     "defaults -currentHost write com.apple.screensaver idleTime -int 0 </dev/null\n"
     "defaults write com.apple.WindowManager StandardHideWidgets -int 1 </dev/null\n"
     "defaults write com.apple.WindowManager StageManagerHideWidgets -int 1 </dev/null\n"
+    /* Drawing: the genie effect composites in WindowServer, and Dock autohide's slide is redrawn per frame. */
+    "defaults write com.apple.dock mineffect -string scale </dev/null\n"
+    "defaults write com.apple.dock autohide-delay -float 0 </dev/null\n"
+    "defaults write com.apple.dock autohide-time-modifier -float 0 </dev/null\n"
+    /* What the Mac does in the background: none of it is anything an emulated Mac needs to do
+       by itself, and each of these wakes the guest's CPUs out of idle to run a check. */
+    "defaults write com.apple.SoftwareUpdate AutomaticCheckEnabled -bool false </dev/null\n"
+    "defaults write com.apple.commerce AutoUpdate -bool false </dev/null\n"
+    "defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true </dev/null\n"
+    "defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true </dev/null\n"
     "W=\"/System/Library/Desktop Pictures/Solid Colors/Black.png\"\n"
     "[ -f \"$W\" ] || W=$(ls \"/System/Library/Desktop Pictures/Solid Colors/\"*.png 2>/dev/null | head -1)\n"
     "if [ -n \"$W\" ]; then\n"
@@ -635,7 +645,10 @@ static const char lighten_script[] =
     "fi\n"
     "killall Dock 2>/dev/null\n"
     "echo 'Done: window and Dock animations, desktop widgets, the screen saver and a moving wallpaper are off.'\n"
+    "echo \"Also off: software update checks, App Store auto-updates, and the shared folder's .DS_Store writes.\"\n"
     "echo 'Also turn on Reduce Motion and Reduce Transparency: System Settings, Accessibility.'\n"
+    "echo 'For the most memory back, keep Spotlight from indexing the Mac disk:'\n"
+    "echo \"  sudo mdutil -i off /     (then Light-Places, Privacy: wait a minute)\"\n"
     "echo 'Log out and back in for all of it to take effect. To undo: curl -s http://" HV_SHARE_ADDR "/.henge/unlighten | sh'\n";
 
 /* And back. The wallpaper stays as it is: pick one in System Settings. */
@@ -649,6 +662,13 @@ static const char unlighten_script[] =
     "defaults -currentHost delete com.apple.screensaver idleTime 2>/dev/null </dev/null\n"
     "defaults write com.apple.WindowManager StandardHideWidgets -int 0 </dev/null\n"
     "defaults write com.apple.WindowManager StageManagerHideWidgets -int 0 </dev/null\n"
+    "defaults delete com.apple.dock mineffect 2>/dev/null </dev/null\n"
+    "defaults delete com.apple.dock autohide-delay 2>/dev/null </dev/null\n"
+    "defaults delete com.apple.dock autohide-time-modifier 2>/dev/null </dev/null\n"
+    "defaults delete com.apple.SoftwareUpdate AutomaticCheckEnabled 2>/dev/null </dev/null\n"
+    "defaults delete com.apple.commerce AutoUpdate 2>/dev/null </dev/null\n"
+    "defaults delete com.apple.desktopservices DSDontWriteNetworkStores 2>/dev/null </dev/null\n"
+    "defaults delete com.apple.desktopservices DSDontWriteUSBStores 2>/dev/null </dev/null\n"
     "killall Dock 2>/dev/null\n"
     "echo 'Back as it was, apart from the wallpaper (System Settings, Wallpaper).'\n"
     "echo 'Log out and back in (or restart) for all of it to take effect.'\n";

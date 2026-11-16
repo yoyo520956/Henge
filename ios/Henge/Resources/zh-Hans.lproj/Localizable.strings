@@ -430,3 +430,4 @@
 "Mac's memory" = "Mac 占用内存";
 "Last check" = "上次检查";
 "Every few minutes Henge checks its own memory, the running Mac's memory and its log, and trims the log when it grows too large. This keeps iOS from closing Henge on a phone with little memory. iOS decides when a backgrounded app may run, so the checks are exact while Henge is open and best-effort when it is not." = "Henge 每隔几分钟检查一次自身内存、运行中 Mac 的内存和日志，日志过大时自动裁剪。这能避免在内存紧张的设备上被 iOS 关闭。iOS 决定后台 App 何时可运行，因此 Henge 在前台时检查精确，后台时尽力而为。";
+"Sized for this iPhone: the Mac draws at the size of its own screen." = "已按这台 iPhone 适配：Mac 会以与 iPhone 相同的点尺寸绘制，图标和字体不会被缩小。";

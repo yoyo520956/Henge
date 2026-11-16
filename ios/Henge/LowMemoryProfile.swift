@@ -43,18 +43,21 @@ enum LowMemoryProfile {
 
     /// The code cache the low-memory point picks: 512 MB (about 0.9 GB with its records,
     /// instead of 1.75), and what "performance" spends where the limit has room for it.
+    /// The plan decides for a device; this is what the user picked over it.
     static var preferredCodeCacheMB: Int {
         switch active {
-        case .low: return 512
+        case .low: return PerformancePlan.codeCacheMB
         case .balanced: return 1024
         case .performance: return 1536
-        case .auto: return 1024
+        case .auto: return PerformancePlan.codeCacheMB
         }
     }
 
     /// 30 Hz leaves the most of the emulated CPU to the Mac, at the cost of choppier
     /// animation — the right trade for a phone that is already short of both.
-    static var preferredRefreshRate: Int { active == .low ? 30 : 60 }
+    static var preferredRefreshRate: Int {
+        active == .low ? PerformancePlan.refreshRate : 60
+    }
 
     /// The temporary Mac the installer boots to run macOS's own restore: 2 GB on a
     /// low-memory device, 4 GB where the phone can hold it.
