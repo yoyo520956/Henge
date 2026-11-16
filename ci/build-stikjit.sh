@@ -6,18 +6,21 @@
 # Xcode 27. Its .swiftinterface uses Swift 6.2-era syntax that Xcode 16.4's
 # Swift 6.0 cannot parse, so importing StikJIT fails before Henge compiles.
 #
-# Why the module rename: upstream's module is named `StikJIT` and it also
-# declares `public enum StikJIT`. When Xcode 16.4 emits the .swiftinterface,
-# references to the module-level `DDIPaths` inside that enum are qualified as
-# `StikJIT.DDIPaths`. A Swift 6.0 compiler reading that interface resolves the
-# prefix to the enum rather than to the module and fails with:
+# Why the framework is renamed: upstream's module is named `StikJIT` and it
+# also declares `public enum StikJIT`. A framework's Swift module is named
+# after the framework itself (the generated modulemap reads
+# `framework module <framework name>`), so PRODUCT_MODULE_NAME alone does not
+# rename it. When Xcode 16.4 emits the .swiftinterface, references to the
+# module-level `DDIPaths` inside that enum are qualified as `StikJIT.DDIPaths`.
+# A Swift 6.0 compiler reading that interface resolves the prefix to the enum
+# rather than to the module and fails with:
 #     error: 'DDIPaths' is not a member type of enum 'StikJIT.StikJIT'
 # Upstream never hits this because their prebuilt framework was made with
 # Xcode 27, whose compiler emits `StikJIT::DDIPaths` (C++-style, unambiguous).
-# Renaming the Swift module to StikJITKit removes the ambiguity for every
-# compiler. The framework binary stays StikJIT.framework, so the xcframework
-# layout, the Embed StikJIT phase and the Husk layout are untouched; only
-# `import StikJIT` in Henge becomes `import StikJITKit`.
+# Renaming the framework to StikJITKit removes the ambiguity for every
+# compiler: the interface then says `StikJITKit::DDIPaths`. The xcframework
+# still lives at deps/StikJIT.xcframework; only the framework inside it, and
+# therefore `import StikJIT` in Henge, becomes StikJITKit.
 #
 # BUILD_LIBRARY_FOR_DISTRIBUTION must stay ON: `xcodebuild -create-xcframework`
 # refuses a framework that has no .swiftinterface (exit 70).
@@ -32,7 +35,7 @@ test "$(git -C "$STIKJIT_ROOT" describe --tags)" = "2.0.1"
 # Full-width debugserver addresses: the shipped nine-digit packet format
 # truncates JIT mappings above 0xfffffffff on iPads.
 git -C "$STIKJIT_ROOT" apply "$HENGE_ROOT/ci/stikjit-high-address.patch"
-# Give the Swift module a different name from the public enum inside it.
+# Give the framework a name that differs from the public enum inside it.
 git -C "$STIKJIT_ROOT" apply "$HENGE_ROOT/ci/stikjit-module-rename.patch"
 
 cd "$STIKJIT_ROOT"
@@ -41,5 +44,5 @@ xcodebuild archive -project StikJIT.xcodeproj -scheme StikJIT -configuration Rel
     -sdk iphoneos -destination 'generic/platform=iOS' -archivePath build/StikJIT \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES CODE_SIGNING_ALLOWED=NO -quiet
 xcodebuild -create-xcframework \
-    -framework build/StikJIT.xcarchive/Products/Library/Frameworks/StikJIT.framework \
+    -framework build/StikJIT.xcarchive/Products/Library/Frameworks/StikJITKit.framework \
     -output StikJIT.xcframework
